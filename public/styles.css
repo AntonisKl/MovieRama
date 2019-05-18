@@ -6,14 +6,54 @@
     object-fit: cover;
 } */
 
+:root {
+    --text-color: #212529;
+}
+
+
+/* .dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    padding: 12px 16px;
+    z-index: 1;
+}
+
+.dropdown: .dropdown-content {
+    display: block;
+} */
+
 .row {
     margin: 3em 0 3em 0;
+}
+
+body {
+    overflow: hidden;
 }
 
 .movies-list {
     height: 100vh;
     overflow-y: auto;
     overflow-x: hidden;
+    position: relative;
+    top: 9em;
+}
+
+a {
+    text-decoration: none;
+    /* no underline */
+}
+
+a:hover {
+    text-decoration: none;
+    /* no underline */
 }
 
 
@@ -54,11 +94,12 @@
     -webkit-box-orient: vertical;
 }
 
-.card {
+.col-lg-2>.card {
+    color: var(--text-color);
     transition: 0.3s;
 }
 
-.card:hover {
+.col-lg-2>.card:hover {
     cursor: pointer;
     background-color: #3F51B5;
     color: white;
@@ -78,6 +119,11 @@
     width: 3ex;
     height: 3ex;
     margin-right: 1em;
+}
+
+.movie-dropdown {
+    width: 100%;
+    justify-content: space-around;
 }
 
 

@@ -15,28 +15,72 @@ function dateGetYear(dateS) {
     return (new Date(dateS)).getFullYear();
 }
 
-function getGenresS(genreIds, resolve, mainCallback) {
-    let genresS = "";
+function buildReview(review) {
+    return `<li class="list-group-item"> <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-3" style="font-style:oblique">By ` + review["author"] + `</h6>
+                </div>
+                <p class="mb-1" style="text-align: left">` + review["content"] + `</p>
+            </li>`;
+}
 
-    getUrl("/genre/movie/list", [], function callback(responseJson) {
-        let allGenres = responseJson["genres"];
-        console.log(allGenres[0]["id"]);
-        genreIds.forEach(genreId => {
-            let foundGenre = allGenres.find(function(genre) {
-                return genre["id"] == genreId;
-            });
+function fillMovieDetails(movieId) {
+    getVideosReviewsSimilar(movieId, function callback(movieDetails) {
+        console.log(movieDetails);
+        let videos = movieDetails["videos"],
+            reviews = movieDetails["reviews"],
+            similarMovies = movieDetails["similar"];
+        console.log(reviews[0]);
 
-            genresS += foundGenre["name"] + ", ";
-            // console.log("genres " + allGenres[genreId]);
-        });
+        let videoIframeContainer = $("#" + movieId + " #videoIframeContainer");
 
-        mainCallback(genresS, resolve);
+        // video
+        if (videos[0] != null) {
+            $("#" + movieId + " #trailerTitle").show();
+
+            let videoContainer = $("#" + movieId + " #videoContainer");
+            let video = videos[0];
+            let videoUrl = "";
+            if (video["site"] === "YouTube") {
+                videoUrl = "https://www.youtube.com/embed/" + video["key"] + "?controls=0";
+            } else if (video["site"] === "Vimeo") {
+                videoUrl = "https://player.vimeo.com/video/" + video["key"];
+            }
+
+
+            // let source = $("#" + movieId + " #video");
+            videoContainer.attr("src", videoUrl);
+            videoIframeContainer.show();
+            // videoContainer.get(0).load();
+        } else {
+            $("#" + movieId + " #trailerTitle").hide();
+            videoIframeContainer.hide();
+        }
+
+        // reviews
+        // console.log($("#" + movieId + " #reviewsList").html("hi"));
+        let reviewsList = $("#" + movieId + " #reviewsList");
+        // console.log(reviewsList.html());
+        reviewsList.empty();
+
+        for (let i = 0; i < 2; i++) {
+            if (reviews[i] == null)
+                continue;
+            reviewsList.append(buildReview(reviews[i]));
+        }
+        if (reviews.length === 0) {
+            $("#" + movieId + " #reviewsTitle").hide();
+            reviewsList.hide();
+        } else {
+            $("#" + movieId + " #reviewsTitle").show();
+            reviewsList.show();
+        }
     });
 }
 
 function buildCards(movies, mainCallback) {
     let i = 0;
-    let moviesCardsS = "";
+    let moviesCardsS = "",
+        movieDetailsS = "";
 
     let requests = movies.reduce((promiseChain, movie) => {
         return promiseChain.then(() => new Promise((resolve) => {
@@ -51,16 +95,21 @@ function buildCards(movies, mainCallback) {
                         //             `
                         // }
                         cardS += "</div>";
+                        cardS += movieDetailsS;
+                        console.log(movieDetailsS);
                     }
+
                     if (i != 20) {
+                        movieDetailsS = "";
                         cardS += "<div class='row justify-content-center'>";
                     }
                 }
 
                 cardS += `
-                <div class='col-lg-2 d-flex align-items-stretch'>
-                <div class="card">
-                        <img class="card-img-top" src="` + "http://image.tmdb.org/t/p/w300" + movie["poster_path"] + `" alt="Card image cap">
+                <div class='col-lg-2 d-flex align-items-strech'>
+                <div onclick= "jQuery('.collapse').collapse('hide');fillMovieDetails(` + movie["id"] + `);" data-toggle="collapse" data-target="#` + movie["id"] + `" aria-expanded="false" aria-controls="movieDetails" class="card" ">
+                        ` + (movie["poster_path"] == null ? `` : `<img class="card-img-top" src="` + "http://image.tmdb.org/t/p/w300" + movie["poster_path"] + `" alt="Movie poster">`) +
+                    `
                         <div class="card-body">
                             <h5 class="card-title">` + movie["original_title"] + `</h5>
                             <p class="card-text">
@@ -71,12 +120,57 @@ function buildCards(movies, mainCallback) {
                             </p>
                         </div>
                     </div>
-                    </div>`;
+                    </div>
+                    `;
 
+                movieDetailsS += `<div class="collapse" id="` + movie["id"] + `">
+                                    <div class="card text-white bg-secondary">
+                                        <div class="card-body" style="text-align:center;width: 80%;text-align: center;align-self: center;" >
+                                            <h5 class="card-title" style="align-self:center">` + movie["original_title"] + `</h5>
+                                        
+                                            <h5 id="trailerTitle" style="align-self:center;font-weight: 200;">Trailer</h5>
+
+                                            <div id="videoIframeContainer" class="embed-responsive embed-responsive-16by9" style="margin-bottom:1rem;">
+                                                <iframe class="embed-responsive-item" id="videoContainer" style="align-self:center" width="50%" height="50%">
+                                                </iframe>
+                                            </div>
+                                            
+                                            <h5 style="align-self:center;font-weight: 200;">Overview</h5>
+                                            <p>` + movie["overview"] + `</p>
+                                            <h5 id="reviewsTitle" style="align-self:center;font-weight: 200;">Reviews</h5>
+                                            <ul class="list-group" id="reviewsList"> 
+                                            </ul>
+                                            <h5 style="align-self:center;font-weight: 200;">Similar movies</h5>
+<div class='col-lg-2 d-flex align-items-strech'>
+  <div class="card">
+    <img src="..." class="card-img-top" alt="...">
+    <div class="card-body">
+      <h5 class="card-title">Card title</h5>
+      <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+      <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+    </div>
+  </div>
+  <div class="card">
+    <img src="..." class="card-img-top" alt="...">
+    <div class="card-body">
+      <h5 class="card-title">Card title</h5>
+      <p class="card-text">This card has supporting text below as a natural lead-in to additional content.</p>
+      <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+    </div>
+  </div>
+</div>
+</div>
+                                        </div>
+                                    </div>
+                                </div>`;
                 // if (i % 2 == 0) {
                 //     cardS += "</div>";
                 // }
-
+                // getVideosReviewsSimilar(movie["id", ])
+                if (i == 19) {
+                    cardS += "</div>";
+                    cardS += movieDetailsS;
+                }
                 moviesCardsS += cardS;
 
                 i++;
@@ -93,6 +187,29 @@ function buildCards(movies, mainCallback) {
     requests.then(() => mainCallback(moviesCardsS))
 }
 
+// function showDetails(detailsId) {
+//     var movieDetails = document.getElementById(detailsId);
+//     var height = movieDetails.clientHeight;
+//     var width = movieDetails.clientWidth;
+//     // console.log(width + 'x' + height);
+//     // initialize them (within hint.style)
+//     movieDetails.style.height = height + 'px';
+//     movieDetails.style.width = width + 'px';
+
+//     if (movieDetails.style.display == 'none') {
+//         movieDetails.style.display = 'block';
+//         //movieDetails.style.opacity = '1';
+//         movieDetails.style.height = height + 'px';
+//         movieDetails.style.width = width + 'px';
+//         movieDetails.style.padding = '.5em';
+//     } else {
+//         movieDetails.style.display = 'none';
+//         //movieDetails.style.opacity = '0';
+//         movieDetails.style.height = '0';
+//         movieDetails.style.width = '0';
+//         movieDetails.style.padding = '0';
+//     }
+// }
 // function getDate(daysAgo) {
 //     var today = new Date();
 
