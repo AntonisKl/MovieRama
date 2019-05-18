@@ -169,7 +169,7 @@ function buildCards(movies, mainCallback) {
 
                                             <div class="container-fluid"     style="padding-top: 1rem;"> 
 
-                                            <div id="similarCards" class="row justify-content-center" style="margin:0">
+                                            <div id="similarCards" class="row flex-row flex-nowrap" style="margin:0;overflow:auto;">
 
 </div>
 </div>
