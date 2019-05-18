@@ -43,7 +43,7 @@ body {
     overflow-y: auto;
     overflow-x: hidden;
     position: relative;
-    top: 9em;
+    top: 4em;
 }
 
 a {
@@ -103,6 +103,10 @@ a:hover {
     cursor: pointer;
     background-color: #3F51B5;
     color: white;
+}
+
+.col-lg-3>.card {
+    color: var(--text-color);
 }
 
 .card-title {

@@ -23,6 +23,17 @@ function buildReview(review) {
             </li>`;
 }
 
+function buildSimilarCard(similarMovie) {
+    return `<div class='col-lg-3 d-flex align-items-strech' style="max-width: 14rem;">
+            <div class="card bg-light mb-3">
+            <img src="http://image.tmdb.org/t/p/w300` + similarMovie["poster_path"] + `" class="card-img-top" alt="Movie poster">
+            <div class="card-body align-items-center d-flex justify-content-center" style="padding:0.5em">
+                <h6 style="font-weight:300;margin:0;">` + similarMovie["original_title"] + `</h6>
+            </div>
+            </div>
+        </div>`;
+}
+
 function fillMovieDetails(movieId) {
     getVideosReviewsSimilar(movieId, function callback(movieDetails) {
         console.log(movieDetails);
@@ -74,6 +85,20 @@ function fillMovieDetails(movieId) {
             $("#" + movieId + " #reviewsTitle").show();
             reviewsList.show();
         }
+
+        let similarCardsElem = $("#" + movieId + " #similarCards");
+        similarCardsElem.empty();
+
+        if (similarMovies.length === 0) {
+            $("#" + movieId + " #similarMoviesTitle").hide();
+        } else {
+            $("#" + movieId + " #similarMoviesTitle").show();
+        }
+
+        similarMovies.forEach(similarMovie => {
+            similarCardsElem.append(buildSimilarCard(similarMovie));
+        });
+
     });
 }
 
@@ -108,7 +133,7 @@ function buildCards(movies, mainCallback) {
                 cardS += `
                 <div class='col-lg-2 d-flex align-items-strech'>
                 <div onclick= "jQuery('.collapse').collapse('hide');fillMovieDetails(` + movie["id"] + `);" data-toggle="collapse" data-target="#` + movie["id"] + `" aria-expanded="false" aria-controls="movieDetails" class="card" ">
-                        ` + (movie["poster_path"] == null ? `` : `<img class="card-img-top" src="` + "http://image.tmdb.org/t/p/w300" + movie["poster_path"] + `" alt="Movie poster">`) +
+                        ` + (movie["poster_path"] == null ? `` : `<img class="card-img-top" src="http://image.tmdb.org/t/p/w300` + movie["poster_path"] + `" alt="Movie poster">`) +
                     `
                         <div class="card-body">
                             <h5 class="card-title">` + movie["original_title"] + `</h5>
@@ -140,27 +165,15 @@ function buildCards(movies, mainCallback) {
                                             <h5 id="reviewsTitle" style="align-self:center;font-weight: 200;">Reviews</h5>
                                             <ul class="list-group" id="reviewsList"> 
                                             </ul>
-                                            <h5 style="align-self:center;font-weight: 200;">Similar movies</h5>
-<div class='col-lg-2 d-flex align-items-strech'>
-  <div class="card">
-    <img src="..." class="card-img-top" alt="...">
-    <div class="card-body">
-      <h5 class="card-title">Card title</h5>
-      <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
-      <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
-    </div>
-  </div>
-  <div class="card">
-    <img src="..." class="card-img-top" alt="...">
-    <div class="card-body">
-      <h5 class="card-title">Card title</h5>
-      <p class="card-text">This card has supporting text below as a natural lead-in to additional content.</p>
-      <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
-    </div>
-  </div>
+                                            <h5 id="similarMoviesTitle" style="align-self:center;font-weight: 200;">Similar movies</h5>
+
+                                            <div class="container-fluid"     style="padding-top: 1rem;"> 
+
+                                            <div id="similarCards" class="row justify-content-center" style="margin:0">
+
 </div>
 </div>
-                                        </div>
+</div>
                                     </div>
                                 </div>`;
                 // if (i % 2 == 0) {
