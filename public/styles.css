@@ -39,7 +39,7 @@ body {
 }
 
 .movies-list {
-    height: 100vh;
+    height: calc(100vh - 4em);
     overflow-y: auto;
     overflow-x: hidden;
     position: relative;

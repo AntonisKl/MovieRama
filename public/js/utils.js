@@ -2,7 +2,7 @@ function httpGet(url, callback) {
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function() {
         if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-            console.log(JSON.parse(xmlHttp.responseText)["genres"]);
+            // console.log(JSON.parse(xmlHttp.responseText)["genres"]);
             callback(JSON.parse(xmlHttp.responseText));
         }
     }
@@ -34,13 +34,45 @@ function buildSimilarCard(similarMovie) {
         </div>`;
 }
 
+function addListeners(collapseId) {
+    let collapseElem = $("#" + collapseId);
+    // console.log(collapseElem.html());
+
+    collapseElem.on('shown.bs.collapse', function() {
+        console.log("collapsed");
+        // window.location = "#" + $(this).attr("id");
+        document.getElementById(collapseId).scrollIntoView({
+            block: 'start',
+            behavior: 'smooth'
+        });
+        // document.getElementById($(this).attr("id")).scrollTop -= 60;
+        // window.scrollBy(0, 10);
+        // do something…
+    });
+    collapseElem.on('hidden.bs.collapse', function() {
+        console.log("collapsed");
+        let videoContainer = $("#" + $(this).attr("id") + " #videoContainer");
+        videoContainer.attr("src", "");
+        console.log("hidden");
+        // window.location = "#" + $(this).attr("id");
+        document.getElementById(collapseId).scrollIntoView({
+            block: 'start',
+            behavior: 'smooth'
+        });
+        // document.getElementById($(this).attr("id")).scrollTop -= 60;
+        // window.scrollBy(0, 10);
+        // do something…
+    });
+}
+
 function fillMovieDetails(movieId) {
+    console.log("fill movie details");
     getVideosReviewsSimilar(movieId, function callback(movieDetails) {
-        console.log(movieDetails);
+        // console.log(movieDetails);
         let videos = movieDetails["videos"],
             reviews = movieDetails["reviews"],
             similarMovies = movieDetails["similar"];
-        console.log(reviews[0]);
+        // console.log(reviews[0]);
 
         let videoIframeContainer = $("#" + movieId + " #videoIframeContainer");
 
@@ -52,7 +84,7 @@ function fillMovieDetails(movieId) {
             let video = videos[0];
             let videoUrl = "";
             if (video["site"] === "YouTube") {
-                videoUrl = "https://www.youtube.com/embed/" + video["key"] + "?controls=0";
+                videoUrl = "https://www.youtube-nocookie.com/embed/" + video["key"] + "?controls=0&rel=0";
             } else if (video["site"] === "Vimeo") {
                 videoUrl = "https://player.vimeo.com/video/" + video["key"];
             }
@@ -61,7 +93,7 @@ function fillMovieDetails(movieId) {
             // let source = $("#" + movieId + " #video");
             videoContainer.attr("src", videoUrl);
             videoIframeContainer.show();
-            // videoContainer.get(0).load();
+            // videoContainer.load();
         } else {
             $("#" + movieId + " #trailerTitle").hide();
             videoIframeContainer.hide();
@@ -121,7 +153,7 @@ function buildCards(movies, mainCallback) {
                         // }
                         cardS += "</div>";
                         cardS += movieDetailsS;
-                        console.log(movieDetailsS);
+                        // console.log(movieDetailsS);
                     }
 
                     if (i != 20) {
@@ -131,11 +163,10 @@ function buildCards(movies, mainCallback) {
                 }
 
                 cardS += `
-                <div class='col-lg-2 d-flex align-items-strech'>
+                <div class='col-lg-2 smooth-scroll d-flex align-items-strech'>
                 <div onclick= "jQuery('.collapse').collapse('hide');fillMovieDetails(` + movie["id"] + `);" data-toggle="collapse" data-target="#` + movie["id"] + `" aria-expanded="false" aria-controls="movieDetails" class="card" ">
                         ` + (movie["poster_path"] == null ? `` : `<img class="card-img-top" src="http://image.tmdb.org/t/p/w300` + movie["poster_path"] + `" alt="Movie poster">`) +
-                    `
-                        <div class="card-body">
+                    `<div class="card-body">
                             <h5 class="card-title">` + movie["original_title"] + `</h5>
                             <p class="card-text">
                                 <p class="movie-overview">` + movie["overview"] + `</p>
@@ -156,7 +187,7 @@ function buildCards(movies, mainCallback) {
                                             <h5 id="trailerTitle" style="align-self:center;font-weight: 200;">Trailer</h5>
 
                                             <div id="videoIframeContainer" class="embed-responsive embed-responsive-16by9" style="margin-bottom:1rem;">
-                                                <iframe class="embed-responsive-item" id="videoContainer" style="align-self:center" width="50%" height="50%">
+                                                <iframe onload="addListeners(` + movie["id"] + `);" class="embed-responsive-item" id="videoContainer" style="align-self:center" width="50%" height="50%">
                                                 </iframe>
                                             </div>
                                             
@@ -169,11 +200,11 @@ function buildCards(movies, mainCallback) {
 
                                             <div class="container-fluid"     style="padding-top: 1rem;"> 
 
-                                            <div id="similarCards" class="row flex-row flex-nowrap" style="margin:0;overflow:auto;">
+                                                <div id="similarCards" class="row flex-row flex-nowrap" style="margin:0;overflow:auto;">
 
-</div>
-</div>
-</div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>`;
                 // if (i % 2 == 0) {
