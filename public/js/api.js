@@ -78,12 +78,14 @@ function showMoviesCallback(responseJson) {
     }
     let i = 0;
 
+    if ($("#searchBar").val()) {
+        $("#moviesList").empty();
+    }
+
     buildCards(movies, function callback(moviesCardsS) {
         // console.log(moviesCardsS);
 
         document.getElementById("moviesList").innerHTML += moviesCardsS;
-
-
     })
 }
 
@@ -102,9 +104,8 @@ function showMovies(pageNum) {
         lastSearchText = null;
     } else {
         // console.log("ssssssssssssssssssssssssss----------->" + searchText + ", " + lastSearchText);
-        if (lastSearchText == null || (lastSearchText != searchText)) {
-            $("#moviesList").empty();
-        }
+        // if (lastSearchText == null || (lastSearchText != searchText)) {
+        // }
         firstSearch = true;
         getUrl("/search/movie", ["page=" + pageNum, "query=" + searchText], showMoviesCallback);
         lastSearchText = searchText;
