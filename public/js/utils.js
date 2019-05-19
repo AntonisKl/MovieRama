@@ -12,6 +12,9 @@ function httpGet(url, callback) {
 }
 
 function dateGetYear(dateS) {
+    if (!dateS)
+        return null;
+
     return (new Date(dateS)).getFullYear();
 }
 
@@ -49,20 +52,20 @@ function addListeners(collapseId) {
         // window.scrollBy(0, 10);
         // do something…
     });
-    collapseElem.on('hidden.bs.collapse', function() {
-        console.log("collapsed");
-        let videoContainer = $("#" + $(this).attr("id") + " #videoContainer");
-        videoContainer.attr("src", "");
-        console.log("hidden");
-        // window.location = "#" + $(this).attr("id");
-        document.getElementById(collapseId).scrollIntoView({
-            block: 'start',
-            behavior: 'smooth'
-        });
-        // document.getElementById($(this).attr("id")).scrollTop -= 60;
-        // window.scrollBy(0, 10);
-        // do something…
-    });
+    // collapseElem.on('hidden.bs.collapse', function() {
+    //     console.log("collapsed");
+    //     let videoContainer = $("#" + $(this).attr("id") + " #videoContainer");
+    //     videoContainer.attr("src", "");
+    //     console.log("hidden");
+    //     // window.location = "#" + $(this).attr("id");
+    //     document.getElementById(collapseId).scrollIntoView({
+    //         block: 'start',
+    //         behavior: 'smooth'
+    //     });
+    //     // document.getElementById($(this).attr("id")).scrollTop -= 60;
+    //     // window.scrollBy(0, 10);
+    //     // do something…
+    // });
 }
 
 function fillMovieDetails(movieId) {
@@ -163,17 +166,16 @@ function buildCards(movies, mainCallback) {
                 }
 
                 cardS += `
-                <div class='col-lg-2 smooth-scroll d-flex align-items-strech'>
+                <div class='col-lg-2 d-flex align-items-strech'>
                 <div onclick= "jQuery('.collapse').collapse('hide');fillMovieDetails(` + movie["id"] + `);" data-toggle="collapse" data-target="#` + movie["id"] + `" aria-expanded="false" aria-controls="movieDetails" class="card" ">
                         ` + (!movie["poster_path"] ? `` : `<img class="card-img-top" src="http://image.tmdb.org/t/p/w300` + movie["poster_path"] + `" alt="Movie poster">`) +
-                    `<div class="card-body">
+                    `<div class="card-body d-flex flex-column">
                             <h5 class="card-title">` + movie["original_title"] + `</h5>
-                            <p class="card-text">
-                                ` + (!movie["overview"] ? `` : `<p class="movie-overview">` + movie["overview"]) + `</p>
-                                <div align="left" class="movie-item"><img class="card-icon" src="assets/calendar.png" />` + dateGetYear(movie["release_date"]) + `</div>
-                                <div align="left" class="movie-item"><img class="card-icon" src="assets/masks.png" />` + genresS.substring(0, genresS.length - 2) + `</div>
-                                <div align="left" class="movie-item"><img class="card-icon" src="assets/star.png" /> ` + movie["vote_average"] + `</div>
-                            </p>
+                                ` + (!movie["overview"] ? `` : `<p class="movie-overview">` + movie["overview"] + `</p>`) +
+                    `<div class="mt-auto">` + (!dateGetYear(movie["release_date"]) ? `` : `<div align="left" class="movie-item"><img class="card-icon" src="assets/calendar.png" />` + dateGetYear(movie["release_date"]) + `</div>`) +
+                    (!genresS ? `` : `<div align="left" class="movie-item"><img class="card-icon" src="assets/masks.png" />` + genresS.substring(0, genresS.length - 2) + `</div>`) +
+                    `<div align="left" class="movie-item"><img class="card-icon" src="assets/star.png" /> ` + movie["vote_average"] + `</div>
+                    </div>
                         </div>
                     </div>
                     </div>

@@ -39,7 +39,7 @@ $(document).ready(function startInfiniteScroll() {
             //         // do something…
             //     });
             // });
-            $('.collapse').collapse('hide');
+            // $('.collapse').collapse('hide');
 
             showMovies(nextPage++);
             // console.log("heeey1");
