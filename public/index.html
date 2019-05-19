@@ -23,14 +23,22 @@
     <script type="text/javascript" src="../js/infinite-scroll.js"></script>
 
 
-    <!-- <script>
-    </script> -->
+    <script>
+        $(document).ready(function() {
+            $("#searchForm").keypress(function(e) {
+                //Enter key
+                if (e.which == 13) {
+                    return false;
+                }
+            });
+        });
+    </script>
 </head>
 
 <body id="body">
     <div style="z-index: 1;position:fixed;padding: 1em;background-color: #fafafafa;left:0;right:0">
         <!-- Search form -->
-        <form class="form-inline md-form form-sm mt-0 form-inlin justify-content-center" style="margin:0">
+        <form id="searchForm" class="form-inline md-form form-sm mt-0 form-inlin justify-content-center" style="margin:0">
             <i class="fas fa-search" aria-hidden="true"></i>
             <input id="searchBar" class="form-control form-control-sm ml-3 w-75" type="text" placeholder="Search" aria-label="Search" onkeyup="nextPage=1;showMovies(nextPage++);">
         </form>

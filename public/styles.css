@@ -95,6 +95,7 @@ a:hover {
 }
 
 .col-lg-2>.card {
+    width: 100%;
     color: var(--text-color);
     transition: 0.3s;
 }
@@ -106,6 +107,7 @@ a:hover {
 }
 
 .col-lg-3>.card {
+    width: 100%;
     color: var(--text-color);
 }
 

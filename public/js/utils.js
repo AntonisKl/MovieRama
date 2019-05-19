@@ -84,7 +84,7 @@ function fillMovieDetails(movieId) {
             let video = videos[0];
             let videoUrl = "";
             if (video["site"] === "YouTube") {
-                videoUrl = "https://www.youtube-nocookie.com/embed/" + video["key"] + "?controls=0&rel=0";
+                videoUrl = "https://www.youtube-nocookie.com/embed/" + video["key"] + "?rel=0";
             } else if (video["site"] === "Vimeo") {
                 videoUrl = "https://player.vimeo.com/video/" + video["key"];
             }
@@ -165,11 +165,11 @@ function buildCards(movies, mainCallback) {
                 cardS += `
                 <div class='col-lg-2 smooth-scroll d-flex align-items-strech'>
                 <div onclick= "jQuery('.collapse').collapse('hide');fillMovieDetails(` + movie["id"] + `);" data-toggle="collapse" data-target="#` + movie["id"] + `" aria-expanded="false" aria-controls="movieDetails" class="card" ">
-                        ` + (movie["poster_path"] == null ? `` : `<img class="card-img-top" src="http://image.tmdb.org/t/p/w300` + movie["poster_path"] + `" alt="Movie poster">`) +
+                        ` + (!movie["poster_path"] ? `` : `<img class="card-img-top" src="http://image.tmdb.org/t/p/w300` + movie["poster_path"] + `" alt="Movie poster">`) +
                     `<div class="card-body">
                             <h5 class="card-title">` + movie["original_title"] + `</h5>
                             <p class="card-text">
-                                <p class="movie-overview">` + movie["overview"] + `</p>
+                                ` + (!movie["overview"] ? `` : `<p class="movie-overview">` + movie["overview"]) + `</p>
                                 <div align="left" class="movie-item"><img class="card-icon" src="assets/calendar.png" />` + dateGetYear(movie["release_date"]) + `</div>
                                 <div align="left" class="movie-item"><img class="card-icon" src="assets/masks.png" />` + genresS.substring(0, genresS.length - 2) + `</div>
                                 <div align="left" class="movie-item"><img class="card-icon" src="assets/star.png" /> ` + movie["vote_average"] + `</div>
