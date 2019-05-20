@@ -166,12 +166,12 @@ function buildCards(movies, mainCallback) {
                 }
 
                 cardS += `
-                <div class='col-lg-2 d-flex align-items-strech'>
-                <div onclick= "jQuery('.collapse').collapse('hide');fillMovieDetails(` + movie["id"] + `);" data-toggle="collapse" data-target="#` + movie["id"] + `" aria-expanded="false" aria-controls="movieDetails" class="card" ">
+                <div class='col-lg-2 d-flex align-items-strech mx-2 my-4'>
+                <div onclick= "fillMovieDetails(` + movie["id"] + `);" data-toggle="collapse" data-target="#` + movie["id"] + `" aria-expanded="false" aria-controls="movieDetails" class="card hoverable">
                         ` + (!movie["poster_path"] ? `` : `<img class="card-img-top" src="http://image.tmdb.org/t/p/w300` + movie["poster_path"] + `" alt="Movie poster">`) +
                     `<div class="card-body d-flex flex-column">
-                            <h5 class="card-title">` + movie["original_title"] + `</h5>
-                                ` + (!movie["overview"] ? `` : `<p class="movie-overview">` + movie["overview"] + `</p>`) +
+                            <h5 class="card-title main-card-title">` + movie["original_title"] + `</h5>
+                                ` + (!movie["overview"] ? `` : ` <p class="movie-overview">` + movie["overview"] + `</p>`) +
                     `<div class="mt-auto">` + (!dateGetYear(movie["release_date"]) ? `` : `<div align="left" class="movie-item"><img class="card-icon" src="assets/calendar.png" />` + dateGetYear(movie["release_date"]) + `</div>`) +
                     (!genresS ? `` : `<div align="left" class="movie-item"><img class="card-icon" src="assets/masks.png" />` + genresS.substring(0, genresS.length - 2) + `</div>`) +
                     `<div align="left" class="movie-item"><img class="card-icon" src="assets/star.png" /> ` + movie["vote_average"] + `</div>
@@ -181,18 +181,18 @@ function buildCards(movies, mainCallback) {
                     </div>
                     `;
 
-                movieDetailsS += `<div class="collapse" id="` + movie["id"] + `">
+                movieDetailsS += `<div class="collapse my-3" id="` + movie["id"] + `">
                                     <div class="card text-white bg-secondary">
                                         <div class="card-body" style="text-align:center;width: 80%;text-align: center;align-self: center;" >
                                             <h5 class="card-title" style="align-self:center">` + movie["original_title"] + `</h5>
-                                        
+
                                             <h5 id="trailerTitle" style="align-self:center;font-weight: 200;">Trailer</h5>
 
                                             <div id="videoIframeContainer" class="embed-responsive embed-responsive-16by9" style="margin-bottom:1rem;">
                                                 <iframe onload="addListeners(` + movie["id"] + `);" class="embed-responsive-item" id="videoContainer" style="align-self:center" width="50%" height="50%">
                                                 </iframe>
                                             </div>
-                                            
+
                                             <h5 style="align-self:center;font-weight: 200;">Overview</h5>
                                             <p>` + movie["overview"] + `</p>
                                             <h5 id="reviewsTitle" style="align-self:center;font-weight: 200;">Reviews</h5>
@@ -209,6 +209,7 @@ function buildCards(movies, mainCallback) {
                                         </div>
                                     </div>
                                 </div>`;
+
                 // if (i % 2 == 0) {
                 //     cardS += "</div>";
                 // }
