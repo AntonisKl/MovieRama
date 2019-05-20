@@ -40,13 +40,14 @@
         <!-- Search form -->
         <form id="searchForm" class="form-inline md-form form-sm mt-0 form-inlin justify-content-center" style="margin:0">
             <i class="fas fa-search" aria-hidden="true"></i>
-            <input id="searchBar" class="form-control form-control-sm ml-3 w-75" type="text" placeholder="Search" aria-label="Search" onkeyup="nextPage=1;showMovies(nextPage++);">
+            <input id="searchBar" class="form-control form-control-sm ml-3 w-75" type="text" placeholder="Search" aria-label="Search" onkeyup="nextPage=1;showMovies(this.value);">
         </form>
     </div>
     <!-- <div class="form-group has-search">
         <span class="fa fa-search form-control-feedback"></span>
         <input type="text" class="form-control" placeholder="Search">
     </div> -->
+
     <div class="movies-list" id="moviesList">
 
 

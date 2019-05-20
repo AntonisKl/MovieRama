@@ -37,20 +37,18 @@ function buildSimilarCard(similarMovie) {
         </div>`;
 }
 
-function addListeners(collapseId) {
-    let collapseElem = $("#" + collapseId);
+function addListeners(thisElem) {
+    // let collapseElem = $("#" + collapseId);
     // console.log(collapseElem.html());
 
-    collapseElem.on('shown.bs.collapse', function() {
+    $(thisElem).on('shown.bs.collapse', function() {
         console.log("collapsed");
         // window.location = "#" + $(this).attr("id");
-        document.getElementById(collapseId).scrollIntoView({
+        thisElem.scrollIntoView({
             block: 'start',
             behavior: 'smooth'
         });
-        // document.getElementById($(this).attr("id")).scrollTop -= 60;
-        // window.scrollBy(0, 10);
-        // do something…
+
     });
     // collapseElem.on('hidden.bs.collapse', function() {
     //     console.log("collapsed");
@@ -77,11 +75,24 @@ function fillMovieDetails(movieId) {
             similarMovies = movieDetails["similar"];
         // console.log(reviews[0]);
 
-        let videoIframeContainer = $("#" + movieId + " #videoIframeContainer");
+        let movieCollapse = $("#" + movieId);
+        let videoIframeContainer = movieCollapse.find("#videoIframeContainer");
+
+        movieCollapse.on('shown.bs.collapse', function() {
+            console.log("collapsed");
+            // window.location = "#" + $(this).attr("id");
+            movieCollapse.get(0).scrollIntoView({
+                block: 'start',
+                behavior: 'smooth'
+            });
+
+        });
 
         // video
         if (videos[0] != null) {
-            $("#" + movieId + " #trailerTitle").show();
+            videoIframeContainer.append(`<iframe class="embed-responsive-item" id="videoContainer" style="align-self:center" width="50%" height="50%">
+                                                </iframe>`);
+            movieCollapse.find("#trailerTitle").show();
 
             let videoContainer = $("#" + movieId + " #videoContainer");
             let video = videos[0];
@@ -104,7 +115,7 @@ function fillMovieDetails(movieId) {
 
         // reviews
         // console.log($("#" + movieId + " #reviewsList").html("hi"));
-        let reviewsList = $("#" + movieId + " #reviewsList");
+        let reviewsList = movieCollapse.find("#reviewsList");
         // console.log(reviewsList.html());
         reviewsList.empty();
 
@@ -114,10 +125,10 @@ function fillMovieDetails(movieId) {
             reviewsList.append(buildReview(reviews[i]));
         }
         if (reviews.length === 0) {
-            $("#" + movieId + " #reviewsTitle").hide();
+            movieCollapse.find("#reviewsTitle").hide();
             reviewsList.hide();
         } else {
-            $("#" + movieId + " #reviewsTitle").show();
+            movieCollapse.find("#reviewsTitle").show();
             reviewsList.show();
         }
 
@@ -125,9 +136,9 @@ function fillMovieDetails(movieId) {
         similarCardsElem.empty();
 
         if (similarMovies.length === 0) {
-            $("#" + movieId + " #similarMoviesTitle").hide();
+            movieCollapse.find("#similarMoviesTitle").hide();
         } else {
-            $("#" + movieId + " #similarMoviesTitle").show();
+            movieCollapse.find("#similarMoviesTitle").show();
         }
 
         similarMovies.forEach(similarMovie => {
@@ -137,15 +148,16 @@ function fillMovieDetails(movieId) {
     });
 }
 
-function buildCards(movies, mainCallback) {
+function showCards(movies, mainCallback) {
     let i = 0;
-    let moviesCardsS = "",
-        movieDetailsS = "";
+    // let moviesCardsS = "",
+    let movieDetailsS = "";
+    let cardsS = "";
+    console.log("ooo");
 
     let requests = movies.reduce((promiseChain, movie) => {
         return promiseChain.then(() => new Promise((resolve) => {
             getGenresS(movie["genre_ids"], resolve, function callback(genresS, resolve) {
-                let cardS = "";
 
                 if (i % 5 == 0) {
                     if (i != 0) {
@@ -154,20 +166,23 @@ function buildCards(movies, mainCallback) {
                         //             </div>
                         //             `
                         // }
-                        cardS += "</div>";
-                        cardS += movieDetailsS;
+                        cardsS += "</div>";
+                        moviesListElem.append(cardsS);
+                        // cardsS += movieDetailsS;
+                        moviesListElem.append(movieDetailsS);
                         // console.log(movieDetailsS);
                     }
 
                     if (i != 20) {
                         movieDetailsS = "";
-                        cardS += "<div class='row justify-content-center'>";
+                        cardsS = "";
+                        cardsS += "<div class='row justify-content-center'>";
                     }
                 }
 
-                cardS += `
+                cardsS += `
                 <div class='col-lg-2 d-flex align-items-strech mx-2 my-4'>
-                <div onclick= "fillMovieDetails(` + movie["id"] + `);" data-toggle="collapse" data-target="#` + movie["id"] + `" aria-expanded="false" aria-controls="movieDetails" class="card hoverable">
+                <div onclick= "$('.collapse').collapse('hide');fillMovieDetails(` + movie["id"] + `);" data-toggle="collapse" data-target="#` + movie["id"] + `" aria-expanded="false" aria-controls="movieDetails" class="card hoverable">
                         ` + (!movie["poster_path"] ? `` : `<img class="card-img-top" src="http://image.tmdb.org/t/p/w300` + movie["poster_path"] + `" alt="Movie poster">`) +
                     `<div class="card-body d-flex flex-column">
                             <h5 class="card-title main-card-title">` + movie["original_title"] + `</h5>
@@ -189,12 +204,11 @@ function buildCards(movies, mainCallback) {
                                             <h5 id="trailerTitle" style="align-self:center;font-weight: 200;">Trailer</h5>
 
                                             <div id="videoIframeContainer" class="embed-responsive embed-responsive-16by9" style="margin-bottom:1rem;">
-                                                <iframe onload="addListeners(` + movie["id"] + `);" class="embed-responsive-item" id="videoContainer" style="align-self:center" width="50%" height="50%">
-                                                </iframe>
+                                                
                                             </div>
-
-                                            <h5 style="align-self:center;font-weight: 200;">Overview</h5>
-                                            <p>` + movie["overview"] + `</p>
+                                            ` + (!movie["overview"] ? `` : `<h5 style="align-self:center;font-weight: 200;">Overview</h5>
+                                            <p>` + movie["overview"] + `</p>`) + `
+                                            
                                             <h5 id="reviewsTitle" style="align-self:center;font-weight: 200;">Reviews</h5>
                                             <ul class="list-group" id="reviewsList"> 
                                             </ul>
@@ -214,11 +228,14 @@ function buildCards(movies, mainCallback) {
                 //     cardS += "</div>";
                 // }
                 // getVideosReviewsSimilar(movie["id", ])
-                if (i == 19) {
-                    cardS += "</div>";
-                    cardS += movieDetailsS;
+                if (i === movies.length - 1) {
+                    console.log("haaa");
+                    cardsS += "</div>";
+                    moviesListElem.append(cardsS);
+                    // cardsS += movieDetailsS;
+                    moviesListElem.append(movieDetailsS);
                 }
-                moviesCardsS += cardS;
+                // moviesCardsS += cardsS;
 
                 i++;
 
@@ -231,7 +248,7 @@ function buildCards(movies, mainCallback) {
 
     // console.log(moviesCardsS);
 
-    requests.then(() => mainCallback(moviesCardsS))
+    requests.then(() => mainCallback())
 }
 
 // function showDetails(detailsId) {

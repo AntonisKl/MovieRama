@@ -2,6 +2,12 @@
 
 let apiKey = "";
 let firstSearch = false;
+let moviesListElem, searchBarElem;
+
+$(document).ready(function() {
+    moviesListElem = $("#moviesList");
+    searchBarElem = $("#searchBar");
+})
 
 function getUrl(endPoint, params, callback) {
     let paramsS = "";
@@ -69,46 +75,82 @@ function getVideosReviewsSimilar(movieId, mainCallback) {
     });
 }
 
-function showMoviesCallback(responseJson) {
+let prevSearchText = null,
+    curSearchText = null,
+    prevPage = null;
+
+function getMoviesCallback(responseJson) {
     let movies = responseJson["results"];
-    // console.log(movies);
+    console.log(movies);
+    if (movies.length === 0 && nextPage === 1) {
+        // moviesListElem.html("no results");
+        moviesListElem.html(`<div class="no-results">
+                                No Results :(
+                            </div>`);
+
+        return;
+    }
+
+    console.log(nextPage);
     if (nextPage > responseJson["total_pages"]) {
         nextPage--;
         return;
     }
-    let i = 0;
-
-    if ($("#searchBar").val()) {
-        $("#moviesList").empty();
+    console.log("prev " + prevSearchText + ", cur " + curSearchText);
+    if ((curSearchText && prevSearchText !== curSearchText) || prevPage && (prevPage >= nextPage)) {
+        console.log("empty");
+        moviesListElem.empty();
     }
 
-    buildCards(movies, function callback(moviesCardsS) {
-        // console.log(moviesCardsS);
+    let i = 0;
 
-        document.getElementById("moviesList").innerHTML += moviesCardsS;
+    // if (searchBarElem.val()) {
+    //     moviesListElem.empty();
+    // }
+    // if (lastSearchText == null || (lastSearchText != searchText)) {
+    //     moviesListElem.empty();
+    // }
+
+    showCards(movies, function callback() {
+        console.log("heey");
+
+        // console.log("heey");
+        // moviesListElem.append(moviesCardsS);
+        infiniteScrollEnabled = true;
+        prevPage = nextPage++;
+        prevSearchText = curSearchText;
     })
 }
 
-let lastSearchText = null;
 
-function showMovies(pageNum) {
+function showMovies(searchText) {
     // primary_release_date.gte=2014-09-15&primary_release_date.lte=2014-10-22
     let moviesCardsS;
-    let searchText = $("#searchBar").val();
+    curSearchText = searchText;
 
-    if (!searchText) {
-        if (lastSearchText) {
-            $("#moviesList").empty();
+    // if (prevSearchText && curSearchText && prevSearchText === curSearchText)
+    //     return;
+
+    if (!curSearchText) {
+        if (prevSearchText) {
+            moviesListElem.empty();
         }
-        getUrl("/movie/now_playing", ["page=" + pageNum], showMoviesCallback);
-        lastSearchText = null;
+        infiniteScrollEnabled = false;
+        prevSearchText = null;
+        getUrl("/movie/now_playing", ["page=" + nextPage], getMoviesCallback);
     } else {
-        // console.log("ssssssssssssssssssssssssss----------->" + searchText + ", " + lastSearchText);
+        // console.log("ssssssssssssssssssssssssss----------->" + curSearchText + ", " + prevSearchText);
         // if (lastSearchText == null || (lastSearchText != searchText)) {
+        //     moviesListElem.empty();
         // }
+
+        // if (lastSearchText != searchText) {
+        //     moviesListElem.empty();
+        // }
+
         firstSearch = true;
-        getUrl("/search/movie", ["page=" + pageNum, "query=" + searchText], showMoviesCallback);
-        lastSearchText = searchText;
+        infiniteScrollEnabled = false;
+        getUrl("/search/movie", ["page=" + nextPage, "query=" + curSearchText], getMoviesCallback);
     }
 }
 
@@ -136,4 +178,4 @@ function showMovie(movieId) {
     });
 }
 
-console.log("api loaded");
+console.log("api loaded")
