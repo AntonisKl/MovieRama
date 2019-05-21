@@ -70,6 +70,7 @@
     width: 100%;
     color: var(--text-color);
     transition: 0.3s;
+    /* min-height: calc(2.4em + 450px + 10ex + 9ex); */
 }
 
 .col-lg-2>.card:hover {

@@ -42,7 +42,7 @@ function buildReview(review) {
 function buildSimilarCard(similarMovie) {
     return `<div class='col-xs-9 col-sm-9 col-md-9 col-lg-9 d-flex align-items-stretch' style="max-width: 14rem;">
             <div class="card bg-light mb-3">
-            <img src="http://image.tmdb.org/t/p/w300` + similarMovie["poster_path"] + `" class="card-img-top" alt="Movie poster">
+            <img src="http://image.tmdb.org/t/p/w185_and_h278_bestv2` + similarMovie["poster_path"] + `" class="card-img-top" alt="Movie poster">
             <div class="card-body align-items-center d-flex justify-content-center" style="padding:0.5em">
                 <h6 style="font-weight:300;margin:0;">` + similarMovie["original_title"] + `</h6>
             </div>
@@ -103,16 +103,15 @@ function fillMovieDetails(thisElem, movieId) {
         let movieCollapse = $("#" + movieId); // collapsible element
         let videoIframeContainer = movieCollapse.find("#videoIframeContainer");
 
-        movieCollapse.off('shown.bs.collapse');
         // add on shown listener
         movieCollapse.on('shown.bs.collapse', function() {
-            console.log("hi");
             openedIconElem.show();
 
             movieCollapse.get(0).scrollIntoView({
                 block: 'start',
                 behavior: 'smooth'
             });
+            movieCollapse.off('shown.bs.collapse');
 
             // $([document.documentElement, document.body]).animate({
             //     scrollTop: movieCollapse.offset().top
@@ -140,10 +139,11 @@ function fillMovieDetails(thisElem, movieId) {
 
         });
 
-        movieCollapse.off('hidden.bs.collapse');
         // add on hidden listener
         movieCollapse.on('hidden.bs.collapse', function() {
             openedIconElem.hide();
+
+            movieCollapse.off('hidden.bs.collapse');
         });
 
         // trailer
@@ -236,14 +236,15 @@ function showCards(movies, mainCallback) {
                 cardsS += `
                 <div class='col-lg-2 d-flex align-items-strech mx-2 my-4'>
                     <div onclick= "fillMovieDetails(this, ` + movie["id"] + `);" data-toggle="collapse" data-target="#` + movie["id"] + `" aria-expanded="false" aria-controls="movieDetails" class="card hoverable">
-                        ` + (!movie["poster_path"] ? `` : `<img class="card-img-top" data-src="http://image.tmdb.org/t/p/w300` + movie["poster_path"] + `" alt="Movie poster">`) +
+                        ` + (!movie["poster_path"] ? `` : `<img class="card-img-top" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 2 3%22 /%3E" data-src="http://image.tmdb.org/t/p/w185_and_h278_bestv2` + movie["poster_path"] + `" alt="Movie poster">`) +
                     `<div class="card-body d-flex flex-column">
                             <h5 class="card-title main-card-title">` + movie["original_title"] + `</h5>
                             ` + (!movie["overview"] ? `` : ` <p class="movie-overview">` + movie["overview"] + `</p>`) +
                     `<div class="card-items-container mt-auto">` +
-                    (!dateGetYear(movie["release_date"]) ? `` : `<div align="left" class="movie-item"><img class="card-icon" data-src="assets/calendar.png" />` + dateGetYear(movie["release_date"]) + `</div>`) +
-                    (!genresS ? `` : `<div align="left" class="movie-item"><img class="card-icon" data-src="assets/masks.png" />` + genresS.substring(0, genresS.length - 2) + `</div>`) +
-                    `<div align="left" class="movie-item"><img class="card-icon" data-src="assets/star.png" /> ` + movie["vote_average"] + `</div>
+                    (!dateGetYear(movie["release_date"]) ? `` : `<div align="left" class="movie-item"><img class="card-icon" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22 /%3E" data-src="assets/calendar.png" />` + dateGetYear(movie["release_date"]) + `</div>`) +
+                    (!genresS ? `` : `<div align="left" class="movie-item"><img class="card-icon" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22 /%3E"
+                     data-src="assets/masks.png" />` + genresS.substring(0, genresS.length - 2) + `</div>`) +
+                    `<div align="left" class="movie-item"><img class="card-icon" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22 /%3E" data-src="assets/star.png" /> ` + movie["vote_average"] + `</div>
                      </div>
                      <i id="openedIcon` + movie["id"] + `" class="card-opened-icon fa fa-circle mx-auto"> </i>
                         </div>
