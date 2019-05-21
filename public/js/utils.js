@@ -37,34 +37,34 @@ function buildSimilarCard(similarMovie) {
         </div>`;
 }
 
-function addListeners(thisElem) {
-    // let collapseElem = $("#" + collapseId);
-    // console.log(collapseElem.html());
+// function addListeners(thisElem) {
+//     // let collapseElem = $("#" + collapseId);
+//     // console.log(collapseElem.html());
 
-    $(thisElem).on('shown.bs.collapse', function() {
-        console.log("collapsed");
-        // window.location = "#" + $(this).attr("id");
-        thisElem.scrollIntoView({
-            block: 'start',
-            behavior: 'smooth'
-        });
+//     $(thisElem).on('shown.bs.collapse', function() {
+//         console.log("collapsed");
+//         // window.location = "#" + $(this).attr("id");
+//         thisElem.scrollIntoView({
+//             block: 'start',
+//             behavior: 'smooth'
+//         });
 
-    });
-    // collapseElem.on('hidden.bs.collapse', function() {
-    //     console.log("collapsed");
-    //     let videoContainer = $("#" + $(this).attr("id") + " #videoContainer");
-    //     videoContainer.attr("src", "");
-    //     console.log("hidden");
-    //     // window.location = "#" + $(this).attr("id");
-    //     document.getElementById(collapseId).scrollIntoView({
-    //         block: 'start',
-    //         behavior: 'smooth'
-    //     });
-    //     // document.getElementById($(this).attr("id")).scrollTop -= 60;
-    //     // window.scrollBy(0, 10);
-    //     // do something…
-    // });
-}
+//     });
+//     // collapseElem.on('hidden.bs.collapse', function() {
+//     //     console.log("collapsed");
+//     //     let videoContainer = $("#" + $(this).attr("id") + " #videoContainer");
+//     //     videoContainer.attr("src", "");
+//     //     console.log("hidden");
+//     //     // window.location = "#" + $(this).attr("id");
+//     //     document.getElementById(collapseId).scrollIntoView({
+//     //         block: 'start',
+//     //         behavior: 'smooth'
+//     //     });
+//     //     // document.getElementById($(this).attr("id")).scrollTop -= 60;
+//     //     // window.scrollBy(0, 10);
+//     //     // do something…
+//     // });
+// }
 
 function getElementY(elem) {
     return window.pageYOffset + elem.getBoundingClientRect().top
@@ -103,8 +103,15 @@ function doScrolling(element, duration) {
     })
 }
 
-function fillMovieDetails(movieId) {
+function fillMovieDetails(thisElem, movieId) {
+    let openedIconElem = $(thisElem).find("#openedIcon" + movieId);
+
+    if ($(thisElem).attr("aria-expanded") === "true")
+        return;
+
     console.log("fill movie details");
+
+
     getVideosReviewsSimilar(movieId, function callback(movieDetails) {
         // console.log(movieDetails);
         let videos = movieDetails["videos"],
@@ -118,6 +125,7 @@ function fillMovieDetails(movieId) {
         movieCollapse.on('shown.bs.collapse', function() {
             console.log("collapsed");
             // window.location = "#" + $(this).attr("id");
+            openedIconElem.show();
 
             movieCollapse.get(0).scrollIntoView({
                 block: 'start',
@@ -144,6 +152,10 @@ function fillMovieDetails(movieId) {
             // }, 800);
             // } // End if
 
+        });
+
+        movieCollapse.on('hidden.bs.collapse', function() {
+            openedIconElem.hide();
         });
 
         // video
@@ -240,18 +252,20 @@ function showCards(movies, mainCallback) {
 
                 cardsS += `
                 <div class='col-lg-2 d-flex align-items-strech mx-2 my-4'>
-                <div onclick= "fillMovieDetails(` + movie["id"] + `);" data-toggle="collapse" data-target="#` + movie["id"] + `" aria-expanded="false" aria-controls="movieDetails" class="card hoverable">
+                    <div onclick= "fillMovieDetails(this, ` + movie["id"] + `);" data-toggle="collapse" data-target="#` + movie["id"] + `" aria-expanded="false" aria-controls="movieDetails" class="card hoverable">
                         ` + (!movie["poster_path"] ? `` : `<img class="card-img-top" data-src="http://image.tmdb.org/t/p/w300` + movie["poster_path"] + `" alt="Movie poster">`) +
                     `<div class="card-body d-flex flex-column">
                             <h5 class="card-title main-card-title">` + movie["original_title"] + `</h5>
-                                ` + (!movie["overview"] ? `` : ` <p class="movie-overview">` + movie["overview"] + `</p>`) +
-                    `<div class="card-items-container mt-auto">` + (!dateGetYear(movie["release_date"]) ? `` : `<div align="left" class="movie-item"><img class="card-icon" data-src="assets/calendar.png" />` + dateGetYear(movie["release_date"]) + `</div>`) +
+                            ` + (!movie["overview"] ? `` : ` <p class="movie-overview">` + movie["overview"] + `</p>`) +
+                    `<div class="card-items-container mt-auto">` +
+                    (!dateGetYear(movie["release_date"]) ? `` : `<div align="left" class="movie-item"><img class="card-icon" data-src="assets/calendar.png" />` + dateGetYear(movie["release_date"]) + `</div>`) +
                     (!genresS ? `` : `<div align="left" class="movie-item"><img class="card-icon" data-src="assets/masks.png" />` + genresS.substring(0, genresS.length - 2) + `</div>`) +
                     `<div align="left" class="movie-item"><img class="card-icon" data-src="assets/star.png" /> ` + movie["vote_average"] + `</div>
-                    </div>
+                     </div>
+                     <i id="openedIcon` + movie["id"] + `" class="card-opened-icon fa fa-circle mx-auto"> </i>
                         </div>
                     </div>
-                    </div>
+                </div>
                     `;
 
                 movieDetailsS += `<div class="collapse my-3" id="` + movie["id"] + `">

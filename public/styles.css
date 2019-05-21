@@ -14,6 +14,13 @@ body {
     top: 3em;
 }
 
+
+/* .card-img-top {
+    width: 100%;
+    height: calc(450px * (100vh/100vw));
+    object-fit: cover;
+} */
+
 .no-results {
     font-size: 1.5em;
     left: 50%;
@@ -74,6 +81,7 @@ body {
     width: 100%;
     color: var(--text-color);
     transition: 0.3s;
+    /* min-height: calc(2.4em + 450px + 10ex + 9ex); */
 }
 
 .col-lg-2>.card:hover {
@@ -95,6 +103,18 @@ body {
     transform: scale(0.953);
     /* height: 4.8em;
     line-height: 1.2em; */
+}
+
+.card-opened-icon {
+    width: 1em;
+    height: 1em;
+    position: absolute;
+    bottom: 0.5em;
+    right: 0;
+    left: 0;
+    display: none;
+    color: #2962FF;
+    opacity: 0.5;
 }
 
 .col-lg-2>.card:hover>.card-body>.card-items-container {

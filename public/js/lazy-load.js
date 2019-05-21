@@ -1,5 +1,4 @@
 const config = {
-    root: $("#moviesList").get(0),
     rootMargin: '50px',
     threshold: 0
 };
@@ -26,7 +25,7 @@ function startObjerving() {
                     entryJquery.attr("src", entryJquery.attr("data-src"));
                     // isLeaving[entryJquery.attr("id")] = true;
                     // the image is now in place, stop watching
-                    // self.unobserve(entry.target);
+                    self.unobserve(entry.target);
                 }
                 // else if (entry.intersectionRatio <= 0) {
                 //     entryJquery.removeAttr("src");
