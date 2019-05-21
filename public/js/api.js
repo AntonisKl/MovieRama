@@ -1,14 +1,12 @@
-// import { getDate } from './utils.js'; // or './module'
-
-let apiKey = "";
-let firstSearch = false;
-let moviesListElem, searchBarElem;
+const apiKey = "";
+let moviesListElem, searchBarElem; // elements that are found and saved only once for optimization reasons
 
 $(document).ready(function() {
     moviesListElem = $("#moviesList");
     searchBarElem = $("#searchBar");
 })
 
+// getUrl: creates the GET request's url and sends it to the function httpGet
 function getUrl(endPoint, params, callback) {
     let paramsS = "";
     params.forEach(element => {
@@ -22,6 +20,7 @@ function getUrl(endPoint, params, callback) {
 
 let allGenres = null;
 
+// matchMovieGenres: returns a string that contains the genre names that correspond to the genreIds
 function matchMovieGenres(genreIds) {
     let movieGenresS = "";
     genreIds.forEach(genreId => {
@@ -30,60 +29,51 @@ function matchMovieGenres(genreIds) {
         });
 
         movieGenresS += foundGenre["name"] + ", ";
-        // console.log("genres " + allGenres[genreId]);
     });
 
     return movieGenresS;
 }
 
+// getGenresS: sends a GET request for getting all genres only once, and passes the genre names that correspond to the genreIds to the mainCallback
 function getGenresS(genreIds, resolve, mainCallback) {
     let genresS = "";
 
-    if (!allGenres) {
+    if (!allGenres) { // genres need to be fetched for the first time
         getUrl("/genre/movie/list", [], function callback(responseJson) {
-            allGenres = responseJson["genres"];
-            // console.log(allGenres[0]["id"]);
-            genresS += matchMovieGenres(genreIds);
+            allGenres = responseJson["genres"]; // save genres' array
+            genresS += matchMovieGenres(genreIds); // create a string that contains the genre names that correspond to the genreIds
 
             mainCallback(genresS, resolve);
         });
-    } else {
-        genresS += matchMovieGenres(genreIds);
+    } else { // genres are already fetched
+        genresS += matchMovieGenres(genreIds); // create a string that contains the genre names that correspond to the genreIds
 
         mainCallback(genresS, resolve);
     }
 }
 
+// getVideosReviewsSimilar: gets videos, reviews and similar movies of movie with id movieId by sending a single GET request
 function getVideosReviewsSimilar(movieId, mainCallback) {
     let movieDetails = {};
 
     getUrl("/movie/" + movieId, ["append_to_response=videos,reviews,similar"], function callback(responseJson) {
-        // let allGenres = responseJson["genres"];
-        // console.log(responseJson);
-        // genreIds.forEach(genreId => {
-        //     let foundGenre = allGenres.find(function(genre) {
-        //         return genre["id"] == genreId;
-        //     });
-
-        //     genresS += foundGenre["name"] + ", ";
-        //     // console.log("genres " + allGenres[genreId]);
-        // });
         movieDetails["videos"] = responseJson["videos"]["results"];
         movieDetails["reviews"] = responseJson["reviews"]["results"];
         movieDetails["similar"] = responseJson["similar"]["results"];
-        mainCallback(movieDetails);
+
+        mainCallback(movieDetails); // pass the necessary response data to the callback
     });
 }
 
-let prevSearchText = null,
-    curSearchText = null,
-    prevPage = null;
+let prevSearchText = null, // previous search input text
+    curSearchText = null, // current search input text
+    prevPage = null; // previous page requested
 
+// this callback is used both when we show all movies and when we search for movies
 function getMoviesCallback(responseJson) {
     let movies = responseJson["results"];
-    console.log(movies);
+    // console.log(movies);
     if (movies.length === 0 && nextPage === 1) {
-        // moviesListElem.html("no results");
         moviesListElem.html(`<div class="no-results">
                                 No Results :(
                             </div>`);
@@ -91,92 +81,42 @@ function getMoviesCallback(responseJson) {
         return;
     }
 
-    console.log(nextPage);
     if (nextPage > responseJson["total_pages"]) {
+        // not any more pages in the database, so reset nextPage counter and return
         nextPage--;
         return;
     }
-    console.log("prev " + prevSearchText + ", cur " + curSearchText);
+
     if ((curSearchText && prevSearchText !== curSearchText) || prevPage && (prevPage >= nextPage)) {
-        console.log("empty");
+        // empty movies' list to prepare it for the new movies to be shown
         moviesListElem.empty();
     }
 
     let i = 0;
 
-    // if (searchBarElem.val()) {
-    //     moviesListElem.empty();
-    // }
-    // if (lastSearchText == null || (lastSearchText != searchText)) {
-    //     moviesListElem.empty();
-    // }
-
     showCards(movies, function callback() {
-        // console.log("heey");
-
-        startObjerving();
-        // console.log("heey");
-        // moviesListElem.append(moviesCardsS);
-        infiniteScrollEnabled = true;
-        prevPage = nextPage++;
-        prevSearchText = curSearchText;
+        startObserving(); // start observing images for lazy load
+        infiniteScrollEnabled = true; // ready to make the next request (if any) of infinite scroll
+        prevPage = nextPage++; // update prevPage and progress nextPage
+        prevSearchText = curSearchText; // update prevSearchText
     })
 }
 
-
+// showMovies: shows all movies or the movies that are corresponding to the given search input
+// searchText === null -> shows all movies
+// searchText != null && searchText !== "" -> shows movies by searching
 function showMovies(searchText) {
-    // primary_release_date.gte=2014-09-15&primary_release_date.lte=2014-10-22
-    let moviesCardsS;
-    curSearchText = searchText;
-
-    // if (prevSearchText && curSearchText && prevSearchText === curSearchText)
-    //     return;
+    curSearchText = searchText; // update curSearchText
 
     if (!curSearchText) {
         if (prevSearchText) {
             moviesListElem.empty();
         }
-        infiniteScrollEnabled = false;
-        prevSearchText = null;
-        getUrl("/movie/now_playing", ["page=" + nextPage], getMoviesCallback);
+        infiniteScrollEnabled = false; // disable infinite scroll requests while processing the current request
+        prevSearchText = null; // update prevSearchText
+        getUrl("/movie/now_playing", ["page=" + nextPage], getMoviesCallback); // send GET request for all movies
     } else {
-        // console.log("ssssssssssssssssssssssssss----------->" + curSearchText + ", " + prevSearchText);
-        // if (lastSearchText == null || (lastSearchText != searchText)) {
-        //     moviesListElem.empty();
-        // }
-
-        // if (lastSearchText != searchText) {
-        //     moviesListElem.empty();
-        // }
-
-        firstSearch = true;
-        infiniteScrollEnabled = false;
-        getUrl("/search/movie", ["page=" + nextPage, "query=" + curSearchText], getMoviesCallback);
+        infiniteScrollEnabled = false; // disable infinite scroll requests while processing the current request
+        getUrl("/search/movie", ["page=" + nextPage, "query=" + curSearchText], getMoviesCallback); // send GET request for search movies
     }
 }
-
-// function showMoviesSearchResults(searchText) {
-//     // primary_release_date.gte=2014-09-15&primary_release_date.lte=2014-10-22
-//     let moviesCardsS;
-//     getUrl("/search/movie", ["page=" + pageNum], function callback(responseJson) {
-//         let movies = responseJson["results"];
-//         console.log(movies);
-
-//         let i = 0;
-
-//         buildCards(movies, function callback(moviesCardsS) {
-//             // console.log(moviesCardsS);
-
-//             document.getElementById("moviesList").innerHTML += moviesCardsS;
-//         })
-
-//     });
-// }
-
-function showMovie(movieId) {
-    getUrl("/movie/" + movieId, [], function callback(movie) {
-        console.log(movie);
-    });
-}
-
-console.log("api loaded")

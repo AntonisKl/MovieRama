@@ -3,45 +3,34 @@ const config = {
     threshold: 0
 };
 
-let observer = null,
-    isLeaving = {};
+let observer = null;
 
-function startObjerving() {
-    // register the config object with an instance
-    // of intersectionObserver
-    if (!observer) {
+// startObserving: starts observing all the images that can be lazy-loaded
+function startObserving() {
+    if (!observer) { // if observer is not initialized, initialize it
         observer = new IntersectionObserver(function(entries, self) {
             // iterate over each entry
             entries.forEach(entry => {
-                // console.log(entry.intersectionRatio);
 
-                // process just the images that are intersecting.
-                // isIntersecting is a property exposed by the interface
                 let entryJquery = $(entry.target);
+                // process just the images that are in the viewport
                 if (entry.isIntersecting) {
-                    // custom function that copies the path to the img
-                    // from data-src to src
-                    // console.log(entryJquery);
+                    // start loading image
                     entryJquery.attr("src", entryJquery.attr("data-src"));
-                    // isLeaving[entryJquery.attr("id")] = true;
                     // the image is now in place, stop watching
                     self.unobserve(entry.target);
                 }
                 // else if (entry.intersectionRatio <= 0) {
                 //     entryJquery.removeAttr("src");
                 // }
-                // else if (isLeaving[entryJquery.attr("id")]) {
-                //     // entryJquery.attr("data-src", entryJquery.attr("src"));
-                //     entryJquery.attr("src", "");
-                //     isLeaving[entryJquery.attr("id")] = false;
-                // }
             });
         }, config);
     }
 
+    // get all images that can be lazy-loaded
     const imgs = document.querySelectorAll('[data-src]');
     imgs.forEach(img => {
-        // console.log("hoyyy");
+        // start observing each image
         observer.observe(img);
     });
 }
