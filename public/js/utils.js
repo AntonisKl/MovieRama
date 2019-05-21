@@ -66,6 +66,43 @@ function addListeners(thisElem) {
     // });
 }
 
+function getElementY(elem) {
+    return window.pageYOffset + elem.getBoundingClientRect().top
+}
+
+function doScrolling(element, duration) {
+    var startingY = window.pageYOffset
+    var elementY = getElementY(element)
+        // If element is close to page's bottom then window will scroll only to some position above the element.
+    var targetY = document.body.scrollHeight - elementY < window.innerHeight ? document.body.scrollHeight - window.innerHeight : elementY
+    var diff = targetY - startingY
+        // Easing function: easeInOutCubic
+        // From: https://gist.github.com/gre/1650294
+    var easing = function(t) { return t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1 }
+    var start
+
+    if (!diff) return
+
+    // Bootstrap our animation - it will get called right before next frame shall be rendered.
+    window.requestAnimationFrame(function step(timestamp) {
+        if (!start) start = timestamp
+            // Elapsed miliseconds since start of scrolling.
+        var time = timestamp - start
+            // Get percent of completion in range [0, 1].
+        var percent = Math.min(time / duration, 1)
+            // Apply the easing.
+            // It can cause bad-looking slow frames in browser performance tool, so be careful.
+        percent = easing(percent)
+
+        window.scrollTo(0, startingY + diff * percent)
+
+        // Proceed with animation as long as we wanted it to.
+        if (time < duration) {
+            window.requestAnimationFrame(step)
+        }
+    })
+}
+
 function fillMovieDetails(movieId) {
     console.log("fill movie details");
     getVideosReviewsSimilar(movieId, function callback(movieDetails) {
@@ -81,10 +118,31 @@ function fillMovieDetails(movieId) {
         movieCollapse.on('shown.bs.collapse', function() {
             console.log("collapsed");
             // window.location = "#" + $(this).attr("id");
+
             movieCollapse.get(0).scrollIntoView({
                 block: 'start',
                 behavior: 'smooth'
             });
+            // moviesListElem.scroll({
+            //     top: $(this).position().top,
+            //     left: 0,
+            //     behavior: 'smooth'
+            // });
+            // doScrolling.bind(null, movieCollapse.get(0), 1000);
+
+            // if (movieCollapse.hash !== "") {
+            // Prevent default anchor click behavior
+            // event.preventDefault();
+
+            // // Store hash
+            // var hash = movieCollapse.hash;
+
+            // Using jQuery's animate() method to add smooth page scroll
+            // The optional number (800) specifies the number of milliseconds it takes to scroll to the specified area
+            // moviesListElem.animate({
+            //     scrollTop: $(this).position().top
+            // }, 800);
+            // } // End if
 
         });
 
@@ -182,14 +240,14 @@ function showCards(movies, mainCallback) {
 
                 cardsS += `
                 <div class='col-lg-2 d-flex align-items-strech mx-2 my-4'>
-                <div onclick= "$('.collapse').collapse('hide');fillMovieDetails(` + movie["id"] + `);" data-toggle="collapse" data-target="#` + movie["id"] + `" aria-expanded="false" aria-controls="movieDetails" class="card hoverable">
-                        ` + (!movie["poster_path"] ? `` : `<img class="card-img-top" src="http://image.tmdb.org/t/p/w300` + movie["poster_path"] + `" alt="Movie poster">`) +
+                <div onclick= "fillMovieDetails(` + movie["id"] + `);" data-toggle="collapse" data-target="#` + movie["id"] + `" aria-expanded="false" aria-controls="movieDetails" class="card hoverable">
+                        ` + (!movie["poster_path"] ? `` : `<img class="card-img-top" data-src="http://image.tmdb.org/t/p/w300` + movie["poster_path"] + `" alt="Movie poster">`) +
                     `<div class="card-body d-flex flex-column">
                             <h5 class="card-title main-card-title">` + movie["original_title"] + `</h5>
                                 ` + (!movie["overview"] ? `` : ` <p class="movie-overview">` + movie["overview"] + `</p>`) +
-                    `<div class="mt-auto">` + (!dateGetYear(movie["release_date"]) ? `` : `<div align="left" class="movie-item"><img class="card-icon" src="assets/calendar.png" />` + dateGetYear(movie["release_date"]) + `</div>`) +
-                    (!genresS ? `` : `<div align="left" class="movie-item"><img class="card-icon" src="assets/masks.png" />` + genresS.substring(0, genresS.length - 2) + `</div>`) +
-                    `<div align="left" class="movie-item"><img class="card-icon" src="assets/star.png" /> ` + movie["vote_average"] + `</div>
+                    `<div class="card-items-container mt-auto">` + (!dateGetYear(movie["release_date"]) ? `` : `<div align="left" class="movie-item"><img class="card-icon" data-src="assets/calendar.png" />` + dateGetYear(movie["release_date"]) + `</div>`) +
+                    (!genresS ? `` : `<div align="left" class="movie-item"><img class="card-icon" data-src="assets/masks.png" />` + genresS.substring(0, genresS.length - 2) + `</div>`) +
+                    `<div align="left" class="movie-item"><img class="card-icon" data-src="assets/star.png" /> ` + movie["vote_average"] + `</div>
                     </div>
                         </div>
                     </div>

@@ -112,8 +112,9 @@ function getMoviesCallback(responseJson) {
     // }
 
     showCards(movies, function callback() {
-        console.log("heey");
+        // console.log("heey");
 
+        startObjerving();
         // console.log("heey");
         // moviesListElem.append(moviesCardsS);
         infiniteScrollEnabled = true;
