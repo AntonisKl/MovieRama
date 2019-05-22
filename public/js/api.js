@@ -39,7 +39,6 @@ function getVideosReviewsSimilar(movieId, callback) {
 
         if (movieDetails["reviews"].length === 0 && language === "el") { // if no greek review exists, get the english ones
             getUrl("/movie/" + movieId + "/reviews", ["language=en"], function(responseJson) {
-                console.log(responseJson);
                 movieDetails["reviews"] = responseJson["results"];
                 callback(movieDetails); // pass the necessary response data to the callback
             });

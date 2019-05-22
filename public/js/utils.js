@@ -1,12 +1,9 @@
 // global variables
-let moviesListElem, searchBarElem, searchClearElem, // elements that are found and saved only once for optimization reasons
-    engImgUrl = "https://lipis.github.io/flag-icon-css/flags/4x3/gb.svg",
-    grImgUrl = "https://lipis.github.io/flag-icon-css/flags/4x3/gr.svg";
+let moviesListElem, searchClearElem; // elements that are found and saved only once for optimization reasons 
 
 // initialize global element variables and set language
 $(document).ready(function() {
     moviesListElem = $("#moviesList");
-    searchBarElem = $("#searchBar");
     searchClearElem = $("#searchClear");
 })
 

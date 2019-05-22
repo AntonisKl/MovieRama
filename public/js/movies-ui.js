@@ -18,14 +18,14 @@ function buildReview(review) {
 // buildSimilarCard: returns a similar movie's card inside a responsive column
 function buildSimilarCard(similarMovie) {
     return `<div class='col-xs-9 col-sm-9 col-md-9 col-lg-9 d-flex align-items-stretch' style="max-width: 14rem;">
-            <div onclick="searchForMovie('` + similarMovie["original_title"] + `')" class="card card-hoverable bg-light my-3">
+            <div onclick="searchForMovie('` + similarMovie["title"].replace("'", "\\'") + `')" class="card card-hoverable bg-light my-3">
             <div class="text-center bg-light">
 
             <img src="http://image.tmdb.org/t/p/w185_and_h278_bestv2` + similarMovie["poster_path"] + `" class="card-img-top similar-card-img-top w-auto" alt="Movie poster">
             </div>
 
             <div class="card-body align-items-center d-flex justify-content-center" style="padding:0.5em">
-                <h6 style="font-weight:300;margin:0;">` + similarMovie["original_title"] + `</h6>
+                <h6 style="font-weight:300;margin:0;">` + similarMovie["title"] + `</h6>
             </div>
             </div>
         </div>`;
@@ -165,11 +165,11 @@ function showCards(movies) {
                     <div onclick= "fillMovieDetails(this, ` + movie["id"] + `);" data-expanded="false" class="card card-hoverable hoverable">
                         ` + (!movie["poster_path"] ? `` : `<img class="card-img-top" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 2 3%22 /%3E" data-src="http://image.tmdb.org/t/p/w300_and_h450_bestv2` + movie["poster_path"] + `" alt="Movie poster">`) +
             `<div class="card-body d-flex flex-column">
-                            <h5 class="card-title main-card-title">` + movie["original_title"] + `</h5>
+                            <h5 class="card-title main-card-title">` + movie["title"] + `</h5>
                             ` + (!movie["overview"] ? `` : ` <p class="movie-overview">` + movie["overview"] + `</p>`) +
             `<div class="card-items-container mt-auto">` +
             (!dateGetYear(movie["release_date"]) ? `` : `<div align="left" class="movie-item"><img title="` + getString("release_year") + `" class="card-icon" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22 /%3E" data-src="assets/calendar.png" />` + dateGetYear(movie["release_date"]) + `</div>`) +
-            (!genresS ? `` : `<div align="left" class="movie-item"><img title="` + getString("genres") + `" class="card-icon" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22 /%3E"
+            (!genresS ? `` : `<div align="left" class="movie-item"><img title="` + (genresS.indexOf(",") === -1 ? getString("genre") : getString("genres")) + `" class="card-icon" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22 /%3E"
                      data-src="assets/masks.png" />` + genresS + `</div>`) +
             `<div align="left" class="movie-item"><img title="` + getString("rating") + `" class="card-icon" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22 /%3E" data-src="assets/star.png" /> ` + movie["vote_average"] + `</div>
                      </div>
@@ -183,11 +183,11 @@ function showCards(movies) {
         movieDetailsS += `<div class="collapse my-3" id="` + movie["id"] + `">
                                     <div class="card text-white bg-secondary">
                                         <div class="card-body" style="text-align:center;width: 80%;text-align: center;align-self: center;" >
-                                            <h5 class="card-title" style="align-self:center">` + movie["original_title"] + `</h5>
+                                            <h5 class="card-title" style="align-self:center">` + movie["title"] + `</h5>
                                             ` + (!movie["overview"] ? `` : `<h5 style="align-self:center;font-weight: 200;">` + getString("overview") + `</h5>
-                                            <p>` + movie["overview"] + `</p>`) + `  
-                                            <h5 style="align-self:center;font-weight: 200;">` + getString("genres") + `</h5>
-                                            <p>` + genresS + `</p>
+                                            <p>` + movie["overview"] + `</p>`) + `
+                                            ` + (!genresS ? `` : `<h5 style="align-self:center;font-weight: 200;">` + (genresS.indexOf(",") === -1 ? getString("genre") : getString("genres")) + `</h5>
+                                            <p>` + genresS + `</p>`) + `
                                             <h5 id="trailerTitle" style="align-self:center;font-weight: 200;">` + getString("trailer") + `</h5>
                                             <div id="videoIframeContainer" class="embed-responsive embed-responsive-16by9" style="margin-bottom:1rem;">
                                             </div>
@@ -213,14 +213,15 @@ function showCards(movies) {
     });
 
     startObserving(); // start observing images for lazy load
-    infiniteScrollEnabled = true; // ready to make the next request (if any) of infinite scroll
     prevPage = nextPage++; // update prevPage and progress nextPage
     prevSearchText = curSearchText; // update prevSearchText
+    infiniteScrollEnabled = true; // ready to make the next request (if any) of infinite scroll
 }
 
 // this callback is used both when we show all movies and when we search for movies
 function getMoviesCallback(responseJson) {
     let movies = responseJson["results"];
+    curTotalPagesNum = responseJson["total_pages"];
 
     if (movies.length === 0 && nextPage === 1) { // no results
         moviesListElem.html(`<div class="no-results">
