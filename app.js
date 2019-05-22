@@ -12,9 +12,6 @@ app.use(function(req, res, next) {
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-var server = app.listen(app.get('port'), function() {
-    var port = server.address().port;
-    console.log("Listening on port " + port);
-}, 'localhost');
+app.listen(app.get('port'));
 
 console.log("Starting the app on port " + app.get('port'));
