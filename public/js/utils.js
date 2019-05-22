@@ -1,3 +1,12 @@
+let moviesListElem, searchBarElem, searchClearElem; // elements that are found and saved only once for optimization reasons
+
+// initialize global element variables
+$(document).ready(function() {
+    moviesListElem = $("#moviesList");
+    searchBarElem = $("#searchBar");
+    searchClearElem = $("#searchClear");
+})
+
 // httpGet: sends an http GET request and calls callback when a response is received
 // also, it passes the response text as JSON to the callback function
 function httpGet(url, callback) {
@@ -20,10 +29,25 @@ function dateGetYear(dateS) {
     return (new Date(dateS)).getFullYear();
 }
 
+function toggleSearchClearIconVisibility(searchText) {
+    if (searchText) {
+        searchClearElem.css('visibility', 'visible');
+        searchClearElem.css('opacity', '1');
+    } else {
+        searchClearElem.css('opacity', '0');
+        searchClearElem.css('visibility', 'hidden');
+    }
+}
+
 // showWholeReview: shows the whole review with id reviewId and hides read more button
 function showWholeReview(readMoreElem, reviewId) {
     $(readMoreElem).hide();
     $("#" + reviewId).attr("class", "review-whole mb-1");
+}
+
+function searchForMovie(movieTitle) {
+    searchBarElem.val(movieTitle);
+    searchBarElem.keyup(); // trigger search
 }
 
 // buildReview: returns review's html
@@ -41,13 +65,45 @@ function buildReview(review) {
 // buildSimilarCard: returns a similar movie's card inside a responsive column
 function buildSimilarCard(similarMovie) {
     return `<div class='col-xs-9 col-sm-9 col-md-9 col-lg-9 d-flex align-items-stretch' style="max-width: 14rem;">
-            <div class="card bg-light mb-3">
+            <div onclick="searchForMovie('` + similarMovie["original_title"] + `')" class="card card-hoverable bg-light my-3">
             <img src="http://image.tmdb.org/t/p/w185_and_h278_bestv2` + similarMovie["poster_path"] + `" class="card-img-top" alt="Movie poster">
             <div class="card-body align-items-center d-flex justify-content-center" style="padding:0.5em">
                 <h6 style="font-weight:300;margin:0;">` + similarMovie["original_title"] + `</h6>
             </div>
             </div>
         </div>`;
+}
+
+// matchMovieGenres: returns a string that contains the genre names that correspond to the genreIds
+function matchMovieGenres(genreIds) {
+    let movieGenresS = "";
+    genreIds.forEach(genreId => {
+        let foundGenre = allGenres.find(function(genre) {
+            return genre["id"] == genreId;
+        });
+
+        movieGenresS += foundGenre["name"] + ", ";
+    });
+
+    return movieGenresS;
+}
+
+// getGenresS: sends a GET request for getting all genres only once, and passes the genre names that correspond to the genreIds to the mainCallback
+function getGenresS(genreIds) {
+    // let genresS = "";
+
+    // if (!allGenres) { // genres need to be fetched for the first time
+    //     getUrl("/genre/movie/list", [], function callback(responseJson) {
+    //         allGenres = responseJson["genres"]; // save genres' array
+    //         genresS += matchMovieGenres(genreIds); // create a string that contains the genre names that correspond to the genreIds
+
+    //         mainCallback(genresS, resolve);
+    //     });
+    // } else { // genres are already fetched
+    // genresS += matchMovieGenres(genreIds); // create a string that contains the genre names that correspond to the genreIds
+    let genresS = matchMovieGenres(genreIds); // genres string with ", " in the end
+    return genresS.substring(0, genresS.length - 2);
+    // }
 }
 
 // function getElementY(elem) {
@@ -103,9 +159,11 @@ function fillMovieDetails(thisElem, movieId) {
         let movieCollapse = $("#" + movieId); // collapsible element
         let videoIframeContainer = movieCollapse.find("#videoIframeContainer");
 
+        console.log("hi");
         // add on shown listener
         movieCollapse.on('shown.bs.collapse', function() {
             openedIconElem.show();
+            console.log("hi1");
 
             movieCollapse.get(0).scrollIntoView({
                 block: 'start',
@@ -176,7 +234,7 @@ function fillMovieDetails(thisElem, movieId) {
 
         reviewsList.empty(); // empty reviews list element
 
-        console.log(reviews);
+        // console.log(reviews);
         // add the first two reviews if they are valid
         for (let i = 0; i < 2; i++) {
             if (reviews[i] == null)
@@ -211,81 +269,90 @@ function fillMovieDetails(thisElem, movieId) {
 }
 
 // showCards: shows movies' cards (5 in each row) by using a Promise chain to make sure that the movies will be shown in the correct order every time
-function showCards(movies, mainCallback) {
+function showCards(movies) {
     let i = 0;
     let movieDetailsS = "";
     let cardsS = "";
 
-    let requests = movies.reduce((promiseChain, movie) => {
-        return promiseChain.then(() => new Promise((resolve) => {
-            getGenresS(movie["genre_ids"], resolve, function callback(genresS, resolve) {
+    movies.forEach(movie => {
+        // let requests = movies.reduce((promiseChain, movie) => {
+        //     return promiseChain.then(() => new Promise((resolve) => {
+        let genresS = getGenresS(movie["genre_ids"]);
 
-                if (i % 5 == 0) {
-                    if (i != 0) { // if this isn't the first movie
-                        cardsS += "</div>"; // close row's div
-                        moviesListElem.append(cardsS); // show row of 5 cards
-                        moviesListElem.append(movieDetailsS); // add the hidden dropdowns/collapsibles for the current 5 cards
-                    }
+        if (i % 5 == 0) {
+            if (i != 0) { // if this isn't the first movie
+                cardsS += "</div>"; // close row's div
+                moviesListElem.append(cardsS); // show row of 5 cards
+                moviesListElem.append(movieDetailsS); // add the hidden dropdowns/collapsibles for the current 5 cards
+            }
 
-                    movieDetailsS = ""; // reset movies collapsibles string
-                    cardsS = ""; // reset movies cards string
-                    cardsS += "<div class='row justify-content-center'>"; // start new row
-                }
+            movieDetailsS = ""; // reset movies collapsibles string
+            cardsS = ""; // reset movies cards string
+            cardsS += "<div class='row justify-content-center'>"; // start new row
+        }
 
-                // build current movie's card inside a responsive column
-                cardsS += `
+        // build current movie's card inside a responsive column
+        cardsS += `
                 <div class='col-lg-2 d-flex align-items-strech mx-2 my-4'>
-                    <div onclick= "fillMovieDetails(this, ` + movie["id"] + `);" data-toggle="collapse" data-target="#` + movie["id"] + `" aria-expanded="false" aria-controls="movieDetails" class="card hoverable">
+                    <div onclick= "fillMovieDetails(this, ` + movie["id"] + `);" data-toggle="collapse" data-target="#` + movie["id"] + `" aria-expanded="false" aria-controls="movieDetails" class="card card-hoverable hoverable">
                         ` + (!movie["poster_path"] ? `` : `<img class="card-img-top" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 2 3%22 /%3E" data-src="http://image.tmdb.org/t/p/w185_and_h278_bestv2` + movie["poster_path"] + `" alt="Movie poster">`) +
-                    `<div class="card-body d-flex flex-column">
+            `<div class="card-body d-flex flex-column">
                             <h5 class="card-title main-card-title">` + movie["original_title"] + `</h5>
                             ` + (!movie["overview"] ? `` : ` <p class="movie-overview">` + movie["overview"] + `</p>`) +
-                    `<div class="card-items-container mt-auto">` +
-                    (!dateGetYear(movie["release_date"]) ? `` : `<div align="left" class="movie-item"><img class="card-icon" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22 /%3E" data-src="assets/calendar.png" />` + dateGetYear(movie["release_date"]) + `</div>`) +
-                    (!genresS ? `` : `<div align="left" class="movie-item"><img class="card-icon" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22 /%3E"
-                     data-src="assets/masks.png" />` + genresS.substring(0, genresS.length - 2) + `</div>`) +
-                    `<div align="left" class="movie-item"><img class="card-icon" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22 /%3E" data-src="assets/star.png" /> ` + movie["vote_average"] + `</div>
+            `<div class="card-items-container mt-auto">` +
+            (!dateGetYear(movie["release_date"]) ? `` : `<div align="left" class="movie-item"><img class="card-icon" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22 /%3E" data-src="assets/calendar.png" />` + dateGetYear(movie["release_date"]) + `</div>`) +
+            (!genresS ? `` : `<div align="left" class="movie-item"><img class="card-icon" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22 /%3E"
+                     data-src="assets/masks.png" />` + genresS + `</div>`) +
+            `<div align="left" class="movie-item"><img class="card-icon" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22 /%3E" data-src="assets/star.png" /> ` + movie["vote_average"] + `</div>
                      </div>
-                     <i id="openedIcon` + movie["id"] + `" class="card-opened-icon fa fa-circle mx-auto"> </i>
+                     <i id="openedIcon` + movie["id"] + `" class="card-opened-icon fa fa-chevron-circle-down mx-auto"> </i>
                         </div>
                     </div>
                 </div>
                     `;
 
-                // build current movie's dropdown/collapsible
-                movieDetailsS += `<div class="collapse my-3" id="` + movie["id"] + `">
+        // build current movie's dropdown/collapsible
+        movieDetailsS += `<div class="collapse my-3" id="` + movie["id"] + `">
                                     <div class="card text-white bg-secondary">
                                         <div class="card-body" style="text-align:center;width: 80%;text-align: center;align-self: center;" >
                                             <h5 class="card-title" style="align-self:center">` + movie["original_title"] + `</h5>
+                                            ` + (!movie["overview"] ? `` : `<h5 style="align-self:center;font-weight: 200;">Overview</h5>
+                                            <p>` + movie["overview"] + `</p>`) + `  
+                                            <h5 style="align-self:center;font-weight: 200;">Genres</h5>
+                                            <p>` + genresS + `</p>
                                             <h5 id="trailerTitle" style="align-self:center;font-weight: 200;">Trailer</h5>
                                             <div id="videoIframeContainer" class="embed-responsive embed-responsive-16by9" style="margin-bottom:1rem;">
                                             </div>
-                                            ` + (!movie["overview"] ? `` : `<h5 style="align-self:center;font-weight: 200;">Overview</h5>
-                                            <p>` + movie["overview"] + `</p>`) + `  
                                             <h5 id="reviewsTitle" style="align-self:center;font-weight: 200;">Reviews</h5>
                                             <ul class="list-group" id="reviewsList"> 
                                             </ul>
                                             <h5 id="similarMoviesTitle" style="align-self:center;font-weight: 200;">Similar movies</h5>
-                                            <div class="container-fluid"     style="padding-top: 1rem;"> 
-                                                <div id="similarCards" class="row flex-row flex-nowrap" style="margin:0;overflow:auto;">
+                                            <div class="container-fluid"> 
+                                                <div id="similarCards" class="row flex-row flex-nowrap" style="margin:0;overflow-x:auto;overflow-y:hidden">
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>`;
 
-                if (i === movies.length - 1) { // last movie to be shown
-                    cardsS += "</div>";
-                    moviesListElem.append(cardsS); // show row of 5 cards
-                    moviesListElem.append(movieDetailsS); // add the hidden dropdowns/collapsibles for the current 5 cards
-                }
+        if (i === movies.length - 1) { // last movie to be shown
+            cardsS += "</div>";
+            moviesListElem.append(cardsS); // show row of 5 cards
+            moviesListElem.append(movieDetailsS); // add the hidden dropdowns/collapsibles for the current 5 cards
+        }
 
-                i++;
+        i++;
+    });
 
-                resolve(); // resolve promise
-            });
-        }));
-    }, Promise.resolve());
+    startObserving(); // start observing images for lazy load
+    infiniteScrollEnabled = true; // ready to make the next request (if any) of infinite scroll
+    prevPage = nextPage++; // update prevPage and progress nextPage
+    prevSearchText = curSearchText; // update prevSearchText
 
-    requests.then(() => mainCallback()) // after all movies' card have been shown in the correct order, call the mainCallback function
+    // resolve(); // resolve promise
+    // });
+    //     }));
+    // }, Promise.resolve());
+
+    // requests.then(() => mainCallback()) // after all movies' card have been shown in the correct order, call the mainCallback function
 }

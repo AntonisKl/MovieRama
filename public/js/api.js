@@ -1,10 +1,9 @@
+// global variables
 const apiKey = "";
-let moviesListElem, searchBarElem; // elements that are found and saved only once for optimization reasons
-
-$(document).ready(function() {
-    moviesListElem = $("#moviesList");
-    searchBarElem = $("#searchBar");
-})
+let allGenres = null; // variable in which all the movie DB's genres are stored
+let prevSearchText = null, // previous search input text
+    curSearchText = null, // current search input text
+    prevPage = null; // previous page requested
 
 // getUrl: creates the GET request's url and sends it to the function httpGet
 function getUrl(endPoint, params, callback) {
@@ -18,38 +17,14 @@ function getUrl(endPoint, params, callback) {
     httpGet(url, callback);
 }
 
-let allGenres = null;
 
-// matchMovieGenres: returns a string that contains the genre names that correspond to the genreIds
-function matchMovieGenres(genreIds) {
-    let movieGenresS = "";
-    genreIds.forEach(genreId => {
-        let foundGenre = allGenres.find(function(genre) {
-            return genre["id"] == genreId;
-        });
+// getAndStoreAllGenres: gets all genres and stores them in the global variable allGenres
+function getAndStoreAllGenres(mainCallback) {
+    getUrl("/genre/movie/list", [], function callback(responseJson) {
+        allGenres = responseJson["genres"]; // store genres' array
 
-        movieGenresS += foundGenre["name"] + ", ";
+        mainCallback();
     });
-
-    return movieGenresS;
-}
-
-// getGenresS: sends a GET request for getting all genres only once, and passes the genre names that correspond to the genreIds to the mainCallback
-function getGenresS(genreIds, resolve, mainCallback) {
-    let genresS = "";
-
-    if (!allGenres) { // genres need to be fetched for the first time
-        getUrl("/genre/movie/list", [], function callback(responseJson) {
-            allGenres = responseJson["genres"]; // save genres' array
-            genresS += matchMovieGenres(genreIds); // create a string that contains the genre names that correspond to the genreIds
-
-            mainCallback(genresS, resolve);
-        });
-    } else { // genres are already fetched
-        genresS += matchMovieGenres(genreIds); // create a string that contains the genre names that correspond to the genreIds
-
-        mainCallback(genresS, resolve);
-    }
 }
 
 // getVideosReviewsSimilar: gets videos, reviews and similar movies of movie with id movieId by sending a single GET request
@@ -65,9 +40,13 @@ function getVideosReviewsSimilar(movieId, mainCallback) {
     });
 }
 
-let prevSearchText = null, // previous search input text
-    curSearchText = null, // current search input text
-    prevPage = null; // previous page requested
+// afterShowCards: called after showCards function
+// function afterShowCards() {
+//     startObserving(); // start observing images for lazy load
+//     infiniteScrollEnabled = true; // ready to make the next request (if any) of infinite scroll
+//     prevPage = nextPage++; // update prevPage and progress nextPage
+//     prevSearchText = curSearchText; // update prevSearchText
+// }
 
 // this callback is used both when we show all movies and when we search for movies
 function getMoviesCallback(responseJson) {
@@ -90,16 +69,22 @@ function getMoviesCallback(responseJson) {
     if ((curSearchText && prevSearchText !== curSearchText) || prevPage && (prevPage >= nextPage)) {
         // empty movies' list to prepare it for the new movies to be shown
         moviesListElem.empty();
+        moviesListElem.get(0).scrollTop = 0; // scroll list to top
     }
 
     let i = 0;
 
-    showCards(movies, function callback() {
-        startObserving(); // start observing images for lazy load
-        infiniteScrollEnabled = true; // ready to make the next request (if any) of infinite scroll
-        prevPage = nextPage++; // update prevPage and progress nextPage
-        prevSearchText = curSearchText; // update prevSearchText
-    })
+    if (!allGenres) {
+        // fetch all genres because there aren't any stored
+        getAndStoreAllGenres(function callback() {
+            showCards(movies);
+            // afterShowCards();
+        });
+    } else { // genres are stored so we can proceed to show the movies' cards
+        showCards(movies);
+        // afterShowCards();
+    }
+
 }
 
 // showMovies: shows all movies or the movies that are corresponding to the given search input
