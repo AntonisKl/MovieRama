@@ -20,14 +20,8 @@ function startObserving() {
                 if (entry.isIntersecting) {
                     // start loading image
                     entryJquery.attr("src", entryJquery.attr("data-src"));
-                    // the image is now in place, stop watching
-                    // self.unobserve(entry.target);
-                } else if (entry.intersectionRatio <= 0) {
-                    // entryJquery.removeAttr("src");
-                    if (entryJquery.hasClass("card-icon"))
-                        entryJquery.attr("src", imgPlaceholder1x1);
-                    else
-                        entryJquery.attr("src", imgPlaceholder2x3);
+                } else if (entry.intersectionRatio <= 0) { // image got out of viewport
+                    entryJquery.attr("src", entryJquery.hasClass("card-icon") ? imgPlaceholder1x1 : imgPlaceholder2x3); // load placeholder that takes up little space in memory 
                 }
             });
         }, config);
