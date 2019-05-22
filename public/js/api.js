@@ -1,13 +1,18 @@
 // global variables
 const apiKey = "";
-let allGenres = null; // variable in which all the movie DB's genres are stored
-let prevSearchText = null, // previous search input text
+let allGenres = null, // variable in which all the movie DB's genres are stored
+    prevSearchText = null, // previous search input text
     curSearchText = null, // current search input text
     prevPage = null; // previous page requested
 
 // getUrl: creates the GET request's url and sends it to the function httpGet
 function getUrl(endPoint, params, callback) {
     let paramsS = "";
+
+    if (params.length > 0 && params[0].indexOf("language") === -1) { // language isn't explicitly set
+        paramsS += "&language=" + language; // set language
+    }
+
     params.forEach(element => {
         paramsS += ("&" + element);
     })
@@ -31,12 +36,22 @@ function getAndStoreAllGenres(mainCallback) {
 function getVideosReviewsSimilar(movieId, mainCallback) {
     let movieDetails = {};
 
-    getUrl("/movie/" + movieId, ["append_to_response=videos,reviews,similar"], function callback(responseJson) {
+    getUrl("/movie/" + movieId, ["append_to_response=videos,reviews,similar"], function(responseJson) {
         movieDetails["videos"] = responseJson["videos"]["results"];
-        movieDetails["reviews"] = responseJson["reviews"]["results"];
         movieDetails["similar"] = responseJson["similar"]["results"];
+        movieDetails["reviews"] = responseJson["reviews"]["results"];
 
-        mainCallback(movieDetails); // pass the necessary response data to the callback
+        if (movieDetails["reviews"].length === 0 && language === "el") { // if no greek review exists, get the english ones
+            getUrl("/movie/" + movieId + "/reviews", ["language=en"], function(responseJson) {
+                console.log(responseJson);
+                movieDetails["reviews"] = responseJson["results"];
+                mainCallback(movieDetails); // pass the necessary response data to the callback
+            });
+        } else {
+            mainCallback(movieDetails); // pass the necessary response data to the callback
+        }
+
+
     });
 }
 
@@ -54,7 +69,7 @@ function getMoviesCallback(responseJson) {
     // console.log(movies);
     if (movies.length === 0 && nextPage === 1) {
         moviesListElem.html(`<div class="no-results">
-                                No Results :(
+                                ` + (language === "el" ? `Δεν βρέθηκαν αποτελέσματα` : `No results`) + ` :(
                             </div>`);
 
         return;
@@ -78,6 +93,7 @@ function getMoviesCallback(responseJson) {
         // fetch all genres because there aren't any stored
         getAndStoreAllGenres(function callback() {
             showCards(movies);
+
             // afterShowCards();
         });
     } else { // genres are stored so we can proceed to show the movies' cards

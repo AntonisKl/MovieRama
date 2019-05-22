@@ -4,9 +4,9 @@ const config = {
 };
 
 // placeholder SVG images to prevent content reflow caused by lazy-loading
-let imgPlaceholder1x1 = "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22 /%3E",
-    imgPlaceholder2x3 = "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 2 3%22 /%3E";
-let observer = null;
+let imgPlaceholder1x1 = "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22 /%3E", // used for movie items' icons
+    imgPlaceholder2x3 = "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 2 3%22 /%3E", // used for movies' poster images
+    observer = null; // global observer object
 
 // startObserving: starts observing all the images that can be lazy-loaded
 function startObserving() {

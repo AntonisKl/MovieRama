@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="styles.css">
 
     <!-- my scripts -->
+    <script type="text/javascript" src="../js/localization.js"></script>
     <script type="text/javascript" src="../js/lazy-load.js"></script>
     <script type="text/javascript" src="../js/utils.js"></script>
     <script type="text/javascript" src="../js/api.js"></script>
@@ -40,8 +41,9 @@
         <!-- Search form -->
         <form id="searchForm" class="form-inline md-form form-sm mt-0 form-inlin justify-content-center" style="margin:0">
             <i class="fas fa-search" aria-hidden="true"></i>
-            <input id="searchBar" class="form-control form-control-sm ml-3 w-75" type="text" placeholder="Search" aria-label="Search" onkeyup="toggleSearchClearIconVisibility(this.value);nextPage=1;showMovies(this.value);">
+            <input autocomplete="off" id="searchBar" class="form-control form-control-sm ml-3 w-75" type="text" placeholder="Search" aria-label="Search" onkeyup="toggleSearchClearIconVisibility(this.value);nextPage=1;showMovies(this.value);">
             <i id="searchClear" onclick="searchBarElem.val('');searchBarElem.keyup();" class="search-clear-icon fa fa-times"></i>
+            <i class="language-icon" onclick="toggleLanguage();"><img style="display: block;margin: auto;" id="languageImg" src="" > </img></i>
         </form>
     </div>
     <div class="movies-list" id="moviesList">

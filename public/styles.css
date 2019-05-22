@@ -11,13 +11,41 @@
     top: 3em;
 }
 
+.similar-cards-row {
+    margin: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: nowrap;
+}
+
+.language-icon {
+    margin-left: 2em;
+    width: 1.5em;
+    height: 1.125em;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.language-icon:hover {
+    transform: scale(1.5);
+}
+
+@media (max-width: 576px) {
+    /* Small devices, landscape phones up to 576px */
+    .language-icon {
+        margin-left: 0.5em;
+    }
+    .similar-cards-row {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
 .no-results {
-    font-size: 1.5em;
-    left: 50%;
-    bottom: 50%;
+    font-size: 1.3em;
     margin: 0 auto;
     display: table;
-    position: absolute;
+    position: relative;
 }
 
 .movie-item {
@@ -76,6 +104,7 @@
 .card-hoverable:hover {
     cursor: pointer;
     transform: scale(1.05);
+    box-shadow: 0 8px 8px 0 rgba(0, 0, 0, .14), 0 12px 4px -2px rgba(0, 0, 0, .2), 0 4px 20px 0px rgba(0, 0, 0, .12)
 }
 
 .card-hoverable:hover>.card-body>.card-title {

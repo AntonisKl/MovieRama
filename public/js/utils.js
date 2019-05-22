@@ -1,6 +1,9 @@
-let moviesListElem, searchBarElem, searchClearElem; // elements that are found and saved only once for optimization reasons
+// global variables
+let moviesListElem, searchBarElem, searchClearElem, // elements that are found and saved only once for optimization reasons
+    engImgUrl = "https://lipis.github.io/flag-icon-css/flags/4x3/gb.svg",
+    grImgUrl = "https://lipis.github.io/flag-icon-css/flags/4x3/gr.svg";
 
-// initialize global element variables
+// initialize global element variables and set language
 $(document).ready(function() {
     moviesListElem = $("#moviesList");
     searchBarElem = $("#searchBar");
@@ -55,10 +58,10 @@ function buildReview(review) {
     let reviewContentSizeBig = review["content"].length > 1450; // >1450 characters is more than 6 lines on full hd screen
     return `<li class="list-group-item"> 
                 <div class="d-flex w-100 justify-content-between">
-                <h6 class="mb-3" style="font-style:oblique">By ` + review["author"] + `</h6>
+                <h6 class="mb-3" style="font-style:oblique">` + getString("by_user") + ` ` + review["author"] + `</h6>
                 </div>
                 <p id="` + review["id"] + `" class="` + (reviewContentSizeBig === true ? `review` : `review-whole`) + ` mb-1" style="text-align: left">` + review["content"] + `</p>
-                ` + (reviewContentSizeBig === true ? `<div style="text-align: right;width: 100%;"><button class="btn btn-secondary btn-sm text-white mr-0" onclick="showWholeReview(this, '` + review["id"] + `');">Read more</button></div>` : ``) +
+                ` + (reviewContentSizeBig === true ? `<div style="text-align: right;width: 100%;"><button class="btn btn-secondary btn-sm text-white mr-0" onclick="showWholeReview(this, '` + review["id"] + `');">` + getString("read_more") + `</button></div>` : ``) +
         `</li>`;
 }
 
@@ -66,7 +69,11 @@ function buildReview(review) {
 function buildSimilarCard(similarMovie) {
     return `<div class='col-xs-9 col-sm-9 col-md-9 col-lg-9 d-flex align-items-stretch' style="max-width: 14rem;">
             <div onclick="searchForMovie('` + similarMovie["original_title"] + `')" class="card card-hoverable bg-light my-3">
-            <img src="http://image.tmdb.org/t/p/w185_and_h278_bestv2` + similarMovie["poster_path"] + `" class="card-img-top" alt="Movie poster">
+            <div class="text-center bg-light">
+
+            <img src="http://image.tmdb.org/t/p/w185_and_h278_bestv2` + similarMovie["poster_path"] + `" class="card-img-top similar-card-img-top w-auto" alt="Movie poster">
+            </div>
+
             <div class="card-body align-items-center d-flex justify-content-center" style="padding:0.5em">
                 <h6 style="font-weight:300;margin:0;">` + similarMovie["original_title"] + `</h6>
             </div>
@@ -143,65 +150,48 @@ function getGenresS(genreIds) {
 //     })
 // }
 
-// fillMovieDetails: puts the details of the movie with id movieId into the corresponding dropdown/collapsible
+// fillMovieDetails: puts the details of the movie with id movieId into the corresponding dropdown/collapsible and handles the showing/hiding of the collapsible
 // thisElem: current movie's collapsible element
 function fillMovieDetails(thisElem, movieId) {
     let openedIconElem = $(thisElem).find("#openedIcon" + movieId);
+    let movieCollapse = $("#" + movieId); // collapsible element
 
-    if ($(thisElem).attr("aria-expanded") === "true") // if current collapsible is closing return
+    if ($(thisElem).attr("data-expanded") === "true") // if current collapsible is open, return
+    {
+        movieCollapse.collapse("hide");
         return;
+    }
 
     getVideosReviewsSimilar(movieId, function callback(movieDetails) {
         let videos = movieDetails["videos"],
             reviews = movieDetails["reviews"],
             similarMovies = movieDetails["similar"];
 
-        let movieCollapse = $("#" + movieId); // collapsible element
         let videoIframeContainer = movieCollapse.find("#videoIframeContainer");
 
         console.log("hi");
         // add on shown listener
-        movieCollapse.on('shown.bs.collapse', function() {
-            openedIconElem.show();
+        $('body').on('shown.bs.collapse', "#" + movieId, function() {
             console.log("hi1");
+
+            openedIconElem.show();
 
             movieCollapse.get(0).scrollIntoView({
                 block: 'start',
                 behavior: 'smooth'
             });
-            movieCollapse.off('shown.bs.collapse');
+            $('body').off('shown.bs.collapse', "#" + movieId, this);
 
-            // $([document.documentElement, document.body]).animate({
-            //     scrollTop: movieCollapse.offset().top
-            // }, 2000);
-            // moviesListElem.scroll({
-            //     top: $(this).position().top,
-            //     left: 0,
-            //     behavior: 'smooth'
-            // });
-            // doScrolling.bind(null, movieCollapse.get(0), 1000);
-
-            // if (movieCollapse.hash !== "") {
-            // Prevent default anchor click behavior
-            // event.preventDefault();
-
-            // // Store hash
-            // var hash = movieCollapse.hash;
-
-            // Using jQuery's animate() method to add smooth page scroll
-            // The optional number (800) specifies the number of milliseconds it takes to scroll to the specified area
-            // moviesListElem.animate({
-            //     scrollTop: $(this).position().top
-            // }, 800);
-            // } // End if
-
+            $(thisElem).attr("data-expanded", "true");
         });
 
         // add on hidden listener
-        movieCollapse.on('hidden.bs.collapse', function() {
+        $('body').on('hidden.bs.collapse', "#" + movieId, function() {
             openedIconElem.hide();
 
-            movieCollapse.off('hidden.bs.collapse');
+            $('body').off('hidden.bs.collapse', "#" + movieId, this);
+
+            $(thisElem).attr("data-expanded", "false");
         });
 
         // trailer
@@ -234,7 +224,6 @@ function fillMovieDetails(thisElem, movieId) {
 
         reviewsList.empty(); // empty reviews list element
 
-        // console.log(reviews);
         // add the first two reviews if they are valid
         for (let i = 0; i < 2; i++) {
             if (reviews[i] == null)
@@ -257,6 +246,7 @@ function fillMovieDetails(thisElem, movieId) {
 
         if (similarMovies.length === 0) { // no similar movies
             movieCollapse.find("#similarMoviesTitle").hide();
+            movieCollapse.collapse("show");
             return;
         } else {
             movieCollapse.find("#similarMoviesTitle").show();
@@ -265,6 +255,7 @@ function fillMovieDetails(thisElem, movieId) {
         similarMovies.forEach(similarMovie => {
             similarCardsElem.append(buildSimilarCard(similarMovie)); // add similar movie's card to similar movies list element
         });
+        movieCollapse.collapse("show");
     });
 }
 
@@ -275,8 +266,6 @@ function showCards(movies) {
     let cardsS = "";
 
     movies.forEach(movie => {
-        // let requests = movies.reduce((promiseChain, movie) => {
-        //     return promiseChain.then(() => new Promise((resolve) => {
         let genresS = getGenresS(movie["genre_ids"]);
 
         if (i % 5 == 0) {
@@ -294,16 +283,16 @@ function showCards(movies) {
         // build current movie's card inside a responsive column
         cardsS += `
                 <div class='col-lg-2 d-flex align-items-strech mx-2 my-4'>
-                    <div onclick= "fillMovieDetails(this, ` + movie["id"] + `);" data-toggle="collapse" data-target="#` + movie["id"] + `" aria-expanded="false" aria-controls="movieDetails" class="card card-hoverable hoverable">
-                        ` + (!movie["poster_path"] ? `` : `<img class="card-img-top" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 2 3%22 /%3E" data-src="http://image.tmdb.org/t/p/w185_and_h278_bestv2` + movie["poster_path"] + `" alt="Movie poster">`) +
+                    <div onclick= "fillMovieDetails(this, ` + movie["id"] + `);" data-expanded="false" class="card card-hoverable hoverable">
+                        ` + (!movie["poster_path"] ? `` : `<img class="card-img-top" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 2 3%22 /%3E" data-src="http://image.tmdb.org/t/p/w300_and_h450_bestv2` + movie["poster_path"] + `" alt="Movie poster">`) +
             `<div class="card-body d-flex flex-column">
                             <h5 class="card-title main-card-title">` + movie["original_title"] + `</h5>
                             ` + (!movie["overview"] ? `` : ` <p class="movie-overview">` + movie["overview"] + `</p>`) +
             `<div class="card-items-container mt-auto">` +
-            (!dateGetYear(movie["release_date"]) ? `` : `<div align="left" class="movie-item"><img class="card-icon" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22 /%3E" data-src="assets/calendar.png" />` + dateGetYear(movie["release_date"]) + `</div>`) +
-            (!genresS ? `` : `<div align="left" class="movie-item"><img class="card-icon" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22 /%3E"
+            (!dateGetYear(movie["release_date"]) ? `` : `<div align="left" class="movie-item"><img title="` + getString("release_year") + `" class="card-icon" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22 /%3E" data-src="assets/calendar.png" />` + dateGetYear(movie["release_date"]) + `</div>`) +
+            (!genresS ? `` : `<div align="left" class="movie-item"><img title="` + getString("genres") + `" class="card-icon" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22 /%3E"
                      data-src="assets/masks.png" />` + genresS + `</div>`) +
-            `<div align="left" class="movie-item"><img class="card-icon" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22 /%3E" data-src="assets/star.png" /> ` + movie["vote_average"] + `</div>
+            `<div align="left" class="movie-item"><img title="` + getString("rating") + `" class="card-icon" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22 /%3E" data-src="assets/star.png" /> ` + movie["vote_average"] + `</div>
                      </div>
                      <i id="openedIcon` + movie["id"] + `" class="card-opened-icon fa fa-chevron-circle-down mx-auto"> </i>
                         </div>
@@ -316,19 +305,19 @@ function showCards(movies) {
                                     <div class="card text-white bg-secondary">
                                         <div class="card-body" style="text-align:center;width: 80%;text-align: center;align-self: center;" >
                                             <h5 class="card-title" style="align-self:center">` + movie["original_title"] + `</h5>
-                                            ` + (!movie["overview"] ? `` : `<h5 style="align-self:center;font-weight: 200;">Overview</h5>
+                                            ` + (!movie["overview"] ? `` : `<h5 style="align-self:center;font-weight: 200;">` + getString("overview") + `</h5>
                                             <p>` + movie["overview"] + `</p>`) + `  
-                                            <h5 style="align-self:center;font-weight: 200;">Genres</h5>
+                                            <h5 style="align-self:center;font-weight: 200;">` + getString("genres") + `</h5>
                                             <p>` + genresS + `</p>
-                                            <h5 id="trailerTitle" style="align-self:center;font-weight: 200;">Trailer</h5>
+                                            <h5 id="trailerTitle" style="align-self:center;font-weight: 200;">` + getString("trailer") + `</h5>
                                             <div id="videoIframeContainer" class="embed-responsive embed-responsive-16by9" style="margin-bottom:1rem;">
                                             </div>
-                                            <h5 id="reviewsTitle" style="align-self:center;font-weight: 200;">Reviews</h5>
+                                            <h5 id="reviewsTitle" style="align-self:center;font-weight: 200;">` + getString("reviews") + `</h5>
                                             <ul class="list-group" id="reviewsList"> 
                                             </ul>
-                                            <h5 id="similarMoviesTitle" style="align-self:center;font-weight: 200;">Similar movies</h5>
+                                            <h5 id="similarMoviesTitle" style="align-self:center;font-weight: 200;">` + getString("similar_movies") + `</h5>
                                             <div class="container-fluid"> 
-                                                <div id="similarCards" class="row flex-row flex-nowrap" style="margin:0;overflow-x:auto;overflow-y:hidden">
+                                                <div id="similarCards" class="row similar-cards-row flex-row">
                                                 </div>
                                             </div>
                                         </div>
@@ -348,11 +337,4 @@ function showCards(movies) {
     infiniteScrollEnabled = true; // ready to make the next request (if any) of infinite scroll
     prevPage = nextPage++; // update prevPage and progress nextPage
     prevSearchText = curSearchText; // update prevSearchText
-
-    // resolve(); // resolve promise
-    // });
-    //     }));
-    // }, Promise.resolve());
-
-    // requests.then(() => mainCallback()) // after all movies' card have been shown in the correct order, call the mainCallback function
 }
