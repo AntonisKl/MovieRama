@@ -1,6 +1,8 @@
 var express = require('express');
 var app = express();
 var path = require('path');
+var router = require('./api.js');
+
 app.set('port', 4200);
 
 app.use(function(req, res, next) {
@@ -12,6 +14,8 @@ app.use(function(req, res, next) {
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.listen(app.get('port'));
+var server = app.listen(process.env.PORT || app.get('port'));
+
+app.use('/api', router);
 
 console.log("Starting the app on port " + app.get('port'));

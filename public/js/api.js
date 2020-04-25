@@ -1,5 +1,4 @@
 // global variables
-const apiKey = "";
 let allGenres = null; // variable in which all the movie DB's genres are stored
 
 // getUrl: creates the GET request's url and sends it to the function httpGet
@@ -14,7 +13,7 @@ function getUrl(endPoint, params, callback) {
         paramsS += ("&" + element);
     })
 
-    let url = "https://api.themoviedb.org/3" + endPoint + "?api_key=" + apiKey + paramsS;
+    let url = "http://localhost:4200/api/" + "?endPoint=" + encodeURIComponent(endPoint) + "&params=" + encodeURIComponent(paramsS);
 
     httpGet(url, callback);
 }
