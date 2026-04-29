@@ -1,8 +1,41 @@
 # MovieRama
-## Setup guide
-1. Run "npm install".
-2. Create a file with name ".env" inside the root folder of the app and insert the line "API_KEY=[key]" in it, replacing [key] with your key for the-movie-db API.
-3. Run "npm start" to start the local server.
-4. Open the url "localhost:4200" with a browser.
-## Live website
-To checkout the app, go to http://movie-land.herokuapp.com where it is deployed.
+
+MovieRama is a lightweight movie discovery web app powered by The Movie Database (TMDB).
+
+## Tech stack
+
+- Vanilla JavaScript frontend
+- Node.js + Express backend proxy
+
+## Main features
+
+- Search movies and browse paginated results.
+- Infinite scrolling for seamless discovery.
+- Expandable movie cards with:
+  - trailer embeds (YouTube/Vimeo when available)
+  - user reviews with “read more” expansion
+  - similar movie recommendations
+- Genre, release year, overview, and rating metadata on each card.
+- Lazy loading for poster and icon assets.
+- Backend TMDB proxy with server-side credential handling (`API_READ_ACCESS_TOKEN` or `API_KEY`).
+
+## Development
+
+### Prerequisites
+
+- Node.js 18+
+- TMDB credential as environment variable (`API_READ_ACCESS_TOKEN` preferred, `API_KEY` supported)
+
+### Run locally
+
+```bash
+npm install
+npm start
+```
+
+Open `http://localhost:4200`.
+
+## Scripts
+
+- `npm start` — start server
+- `npm test` — syntax checks
