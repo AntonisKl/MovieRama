@@ -17,11 +17,15 @@ function buildReview(review) {
 
 // buildSimilarCard: returns a similar movie's card inside a responsive column
 function buildSimilarCard(similarMovie) {
+    let posterPath = similarMovie["poster_path"];
+    let posterImgElem = posterPath
+        ? `<img src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 2 3%22 /%3E" data-src="https://image.tmdb.org/t/p/w185_and_h278_bestv2` + posterPath + `" class="card-img-top similar-card-img-top w-auto" alt="Movie poster">`
+        : `<div class="d-flex align-items-center justify-content-center px-2" style="height:278px;color:#6c757d;">No poster</div>`;
+
     return `<div class='col-xs-9 col-sm-9 col-md-9 col-lg-9 d-flex align-items-stretch' style="max-width: 14rem;">
             <div onclick="searchForMovie('` + similarMovie["title"].replace("'", "\\'") + `')" class="card card-hoverable bg-light my-3">
             <div class="text-center bg-light">
-
-            <img src="http://image.tmdb.org/t/p/w185_and_h278_bestv2` + similarMovie["poster_path"] + `" class="card-img-top similar-card-img-top w-auto" alt="Movie poster">
+            ` + posterImgElem + `
             </div>
 
             <div class="card-body align-items-center d-flex justify-content-center" style="padding:0.5em">
@@ -133,6 +137,8 @@ function fillMovieDetails(thisElem, movieId) {
             similarCardsElem.append(buildSimilarCard(similarMovie)); // add similar movie's card to similar movies list element
         });
 
+        startObserving(); // observe newly-added similar movie images for lazy loading
+
         movieCollapse.collapse("show"); // show current collapsible to the user
     });
 }
@@ -163,7 +169,7 @@ function showCards(movies) {
         cardsS += `
                 <div class='col-lg-2 d-flex align-items-strech mx-2 my-4'>
                     <div onclick= "fillMovieDetails(this, ` + movie["id"] + `);" data-expanded="false" class="card card-hoverable hoverable">
-                        ` + (!movie["poster_path"] ? `` : `<img class="card-img-top" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 2 3%22 /%3E" data-src="http://image.tmdb.org/t/p/w300_and_h450_bestv2` + movie["poster_path"] + `" alt="Movie poster">`) +
+                        ` + (!movie["poster_path"] ? `` : `<img class="card-img-top" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 2 3%22 /%3E" data-src="https://image.tmdb.org/t/p/w300_and_h450_bestv2` + movie["poster_path"] + `" alt="Movie poster">`) +
             `<div class="card-body d-flex flex-column">
                             <h5 class="card-title main-card-title">` + movie["title"] + `</h5>
                             ` + (!movie["overview"] ? `` : ` <p class="movie-overview">` + movie["overview"] + `</p>`) +
