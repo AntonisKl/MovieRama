@@ -1,25 +1,25 @@
 {
-    "name": "movierama",
-    "version": "1.0.0",
-    "description": "",
-    "main": "app.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "node app.js"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/AntonisKl/MovieRama.git"
-    },
-    "author": "Antonis",
-    "license": "ISC",
-    "bugs": {
-        "url": "https://github.com/AntonisKl/MovieRama/issues"
-    },
-    "homepage": "https://github.com/AntonisKl/MovieRama#readme",
-    "dependencies": {
-        "dotenv": "^8.2.0",
-        "express": "^4.17.3",
-        "request": "^2.88.2"
-    }
+  "name": "movierama",
+  "version": "1.0.0",
+  "description": "A lightweight movie discovery app powered by TMDB, with a static frontend and Node proxy backend.",
+  "main": "app.js",
+  "scripts": {
+    "test": "node --check app.js && node --check api.js",
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AntonisKl/MovieRama.git"
+  },
+  "author": "Antonis",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AntonisKl/MovieRama/issues"
+  },
+  "homepage": "https://github.com/AntonisKl/MovieRama#readme",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "axios": "^1.7.7"
+  }
 }

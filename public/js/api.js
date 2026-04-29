@@ -1,6 +1,10 @@
 // global variables
 let allGenres = null; // variable in which all the movie DB's genres are stored
 
+const apiBaseUrl = (window.MOVIERAMA_CONFIG && window.MOVIERAMA_CONFIG.apiBaseUrl)
+    ? window.MOVIERAMA_CONFIG.apiBaseUrl
+    : 'http://localhost:4200';
+
 // getUrl: creates the GET request's url and sends it to the function httpGet
 function getUrl(endPoint, params, callback) {
     let paramsS = "";
@@ -13,7 +17,7 @@ function getUrl(endPoint, params, callback) {
         paramsS += ("&" + element);
     })
 
-    let url = "http://localhost:4200/api/" + "?endPoint=" + encodeURIComponent(endPoint) + "&params=" + encodeURIComponent(paramsS);
+    let url = apiBaseUrl + "/api/" + "?endPoint=" + encodeURIComponent(endPoint) + "&params=" + encodeURIComponent(paramsS);
 
     httpGet(url, callback);
 }
