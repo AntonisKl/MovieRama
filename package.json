@@ -1,11 +1,12 @@
 {
   "name": "movierama",
   "version": "1.0.0",
-  "description": "A lightweight movie discovery app powered by TMDB, with a static frontend and Node proxy backend.",
+  "description": "A lightweight movie discovery app powered by TMDB, with a static frontend and Cloudflare Pages Function API.",
   "main": "app.js",
   "scripts": {
-    "test": "node --check app.js && node --check api.js",
-    "start": "node app.js"
+    "test": "node --check app.js && node --check api.js && node --check functions/api/index.js",
+    "start": "node app.js",
+    "pages:dev": "npx wrangler pages dev public"
   },
   "repository": {
     "type": "git",

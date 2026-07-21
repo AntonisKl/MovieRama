@@ -1,3 +1,4 @@
 window.MOVIERAMA_CONFIG = {
-  apiBaseUrl: 'http://localhost:4200'
+  // Empty means the same origin, which is the production Pages deployment.
+  apiBaseUrl: ''
 };
